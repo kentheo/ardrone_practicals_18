@@ -32,6 +32,7 @@
     <rosparam param="cov/imu_or">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 100000.0]</rosparam>
   </node>
   <!-- Launch estimator / control arp_node. -->
-  <node name="arp_node" pkg="ardrone_practicals" type="arp_node"
-      output="screen"/>
+  <node name="arp_node" pkg="ardrone_practicals" type="arp_node" output="screen">
+	  <remap from="/cmd_vel" to="/cmd_vel_test"/>
+	</node>
 </launch>
