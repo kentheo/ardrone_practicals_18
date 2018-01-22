@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 #include <Eigen/Core>
 #include <AprilTags/TagDetector.h>
 #include <AprilTags/Tag36h11.h>
@@ -57,6 +58,7 @@ class Frontend
       AprilTags::tagCodes36h11);
   std::shared_ptr<
       arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>> camera_;
+  std::map<int,double> idToSize_;
 };
 
 }  // namespace arp

@@ -16,7 +16,12 @@ void Frontend::setCameraParameters(int imageWidth, int imageHeight,
                                    double imageCenterU, double imageCenterV,
                                    double k1, double k2, double p1, double p2)
 {
-  // TODO: implement
+  camera_.reset(
+      new arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>(
+          imageWidth, imageHeight, focalLengthU, focalLengthV, imageCenterU,
+          imageCenterV,
+          arp::cameras::RadialTangentialDistortion(k1, k2, p1, p2)));
+  camera_->initialiseUndistortMaps();
 }
 
 // the undistorted camera model used for the estimator (later)
@@ -34,9 +39,8 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
 }
 
 bool Frontend::setTarget(unsigned int id, double targetSizeMeters) {
-  // TODO: implement
-  throw std::runtime_error("not implemented");
-  return false; // TODO: true on success
+  idToSize_[id] = targetSizeMeters;
+  return true;
 }
 
 }  // namespace arp
