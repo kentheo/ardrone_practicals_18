@@ -43,9 +43,9 @@ class Frontend
   ///        tag detection.
   struct Detection {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    kinematics::Transformation T_CT;
-    Eigen::Matrix<double,2,4> points;
-    int id;
+    kinematics::Transformation T_CT; ///< The pose of the camera relative to the tag.
+    Eigen::Matrix<double,2,4> points; ///< The tag corner points in pixels [u1...u4; v1...v4].
+    int id; ///< The ID of the detected tag.
   };
   typedef std::vector<Detection, Eigen::aligned_allocator<Detection>> DetectionVec;
 
