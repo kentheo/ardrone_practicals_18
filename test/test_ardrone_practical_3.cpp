@@ -38,12 +38,11 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
   // generate random state
   arp::kinematics::RobotState state;
   state.r_W.setRandom();
-  state.q_WS.setRandom();
+  state.q_WS.coeffs() = Eigen::Vector4d::Random();
   state.v_W.setRandom();
   state.b_g.setRandom();
   state.b_a.setRandom();
-
-  state.segment<4>(3) = state.q_WS().normalized().coeffs();
+  state.q_WS.normalize();
 
   // random measurement
   arp::kinematics::ImuMeasurement measurement_0, measurement_1;
