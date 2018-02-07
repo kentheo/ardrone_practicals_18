@@ -15,7 +15,11 @@ namespace arp {
 ViEkf::ViEkf()
     : cameraModel_(0, 0, 0, 0, 0, 0, arp::cameras::NoDistortion())
 {
-  x_.setZero();
+  x_.r_W.setZero();
+  x_.q_WS.setIdentity();
+  x_.v_W.setZero();
+  x_.b_g.setZero();
+  x_.b_a.setZero();
   P_.setZero();
 }
 
@@ -281,7 +285,7 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
 
   // pose T_WS: transforms points represented in Sensor(IMU) coordinates
   // into World coordinates
-  kinematics::Transformation T_WS(x_.r_WS_W, x_.q_WS);
+  kinematics::Transformation T_WS(x_.r_W, x_.q_WS);
 
   // the point in world coordinates
   const double ds = targetSizesMetres_[id] * 0.5;
