@@ -134,6 +134,8 @@ include_directories(
 add_library(${PROJECT_NAME}
    src/Frontend.cpp
    src/CameraBase.cpp
+   src/Imu.cpp
+   src/ViEkf.cpp
 )
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -142,10 +144,12 @@ target_link_libraries(${PROJECT_NAME}
 
 add_library(${PROJECT_NAME}_autopilot
    src/Autopilot.cpp
+   src/VisualInertialTracker.cpp
 )
 target_link_libraries(${PROJECT_NAME}_autopilot
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${PROJECT_NAME}
 )
 
 
@@ -209,7 +213,7 @@ target_link_libraries(arp_node
 ## Testing ##
 #############
 if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(${PROJECT_NAME}_test test/test_ardrone_practicals.cpp)
+  catkin_add_gtest(${PROJECT_NAME}_test test/test_ardrone_practical_3.cpp)
   target_link_libraries(${PROJECT_NAME}_test 
     ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES}
