@@ -87,10 +87,10 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
     arp::kinematics::RobotState x_0_p = state;
     Eigen::Vector3d deltaAlpha = Eigen::Vector3d::Zero();
     deltaAlpha[i] += delta;
-    x_0_p.q_WS = (arp::kinematics::deltaQ(deltaAlpha) * x_0_p.q_WS).coeffs();
+    x_0_p.q_WS = (arp::kinematics::deltaQ(deltaAlpha) * x_0_p.q_WS);
     ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
     arp::kinematics::RobotState x_0_m = state;
-    x_0_m.q_WS = (arp::kinematics::deltaQ(-deltaAlpha) * x_0_m.q_WS).coeffs();
+    x_0_m.q_WS = (arp::kinematics::deltaQ(-deltaAlpha) * x_0_m.q_WS);
     ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
     Eigen::Matrix<double,16,1> delta_x;
     delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
