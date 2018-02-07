@@ -254,7 +254,12 @@ TEST(ViEkfTest, predictState) {
   newState2.b_g << 3.82437,  0.499508,   2.02314;
   newState2.b_a << -1.28832,   1.77941,  0.307377;
 
-  EXPECT_TRUE((newState-newState2).norm()<1.0e-4);
+  EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<1.0e-4);
+  EXPECT_TRUE((newState.q_W.coeffs()-newState2.q_W.coeffs()).norm()<1.0e-4);
+  EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<1.0e-4);
+  EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<1.0e-4);
+  EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<1.0e-4);
+
 }
 
 TEST(ViEkfTest, updateState) {
@@ -272,7 +277,6 @@ TEST(ViEkfTest, updateState) {
   viEkfTest.setCameraIntrinsics(pinholeCamera);
 
   // initialise random state
-  arp::kinematics::RobotState state;
   arp::kinematics::RobotState state;
   state.r_W << 0.902131,   1.60338,   2.64148;
   state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473  -2.00367;
@@ -332,7 +336,11 @@ TEST(ViEkfTest, updateState) {
   newState2.b_g <<  3.82441,  0.499508,  2.02315;
   newState2.b_a << -1.28833,  1.77946,  0.307319;
 
-  EXPECT_TRUE((newState-newState2).norm()<1.0e-4);
+  EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<1.0e-4);
+  EXPECT_TRUE((newState.q_W.coeffs()-newState2.q_W.coeffs()).norm()<1.0e-4);
+  EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<1.0e-4);
+  EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<1.0e-4);
+  EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<1.0e-4);
 }
 
 } // namespace

@@ -200,6 +200,7 @@ bool ViEkf::predict(uint64_t from_timestampMicroseconds,
     const double delta_t = double(z_k.timestampMicroseconds - z_k_minus_1.timestampMicroseconds) * 1.0e-6;
 
     // TODO: propagate robot state x_ using IMU measurements
+    // WARNING: use a temporary variable for the output of the Imu::stateTransition function call!
     // i.e. we do x_k = f(x_k_minus_1).
     // Also, we compute the matrix F (linearisation of f()) related to
     // delta_chi_k = F * delta_chi_k_minus_1.
