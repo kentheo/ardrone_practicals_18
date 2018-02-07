@@ -10,21 +10,20 @@ namespace kinematics {
 
 struct RobotState {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Eigen::Vector3d r_W;
-  Eigen::Quaterniond q_WS;
-  Transformation T_WS;
-  Eigen::Vector3d v_W;
-  Eigen::Vector3d b_g;
-  Eigen::Vector3d b_a;
+  Eigen::Vector3d r_W;  ///< The position relative to the W frame.
+  Eigen::Quaterniond q_WS;  ///< The quaternion of rotation W-S.
+  Eigen::Vector3d v_W;  ///< The velocity expressed in W frame.
+  Eigen::Vector3d b_g;  ///< The gyro bias.
+  Eigen::Vector3d b_a;  ///< The accelerometer bias.
 };
 
 struct RobotStateDerivative {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Eigen::Vector3d r_dot;
-  Eigen::Vector4d q_dot;
-  Eigen::Vector3d v_W_dot;
-  Eigen::Vector3d b_g_dot;
-  Eigen::Vector3d b_a_dot;
+  Eigen::Vector3d r_dot;  ///< The position time derivative.
+  Eigen::Vector4d q_dot;  ///< The quaternion time derivative.
+  Eigen::Vector3d v_W_dot;  ///< The velocity time derivative.
+  Eigen::Vector3d b_g_dot;  ///< The gyro bias time derivative.
+  Eigen::Vector3d b_a_dot;  ///< The accelerometer bias time derivative.
 };
 
 typedef Eigen::Matrix<double,15,15> ImuKinematicsJacobian;
