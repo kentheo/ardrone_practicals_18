@@ -255,7 +255,7 @@ TEST(ViEkfTest, predictState) {
   newState2.b_a << -1.28832,   1.77941,  0.307377;
 
   EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<1.0e-4);
-  EXPECT_TRUE((newState.q_W.coeffs()-newState2.q_W.coeffs()).norm()<1.0e-4);
+  EXPECT_TRUE((newState.q_WS.coeffs()-newState2.q_WS.coeffs()).norm()<1.0e-4);
   EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<1.0e-4);
   EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<1.0e-4);
   EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<1.0e-4);
@@ -315,7 +315,7 @@ TEST(ViEkfTest, updateState) {
 
   // now we can set the target
   arp::kinematics::Transformation T_WTj(Eigen::Vector3d(3,2,1), Eigen::Quaterniond(7,8,-9,-4).normalized());
-  T_WTj.set((state.T_WS()*T_SC*hp_C).head<3>(),T_WTj.q());
+  T_WTj.set((arp::kinematics::Transformation(state.r_W,state.q_WS)*T_SC*hp_C).head<3>(),T_WTj.q());
   viEkfTest.setTarget(0, T_WTj, 0.0); // target size 0 so all four corners are the same, i.e. point_W
   
   // apply the update
@@ -337,7 +337,7 @@ TEST(ViEkfTest, updateState) {
   newState2.b_a << -1.28833,  1.77946,  0.307319;
 
   EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<1.0e-4);
-  EXPECT_TRUE((newState.q_W.coeffs()-newState2.q_W.coeffs()).norm()<1.0e-4);
+  EXPECT_TRUE((newState.q_WS.coeffs()-newState2.q_WS.coeffs()).norm()<1.0e-4);
   EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<1.0e-4);
   EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<1.0e-4);
   EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<1.0e-4);
