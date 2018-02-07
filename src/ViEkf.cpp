@@ -281,9 +281,7 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
 
   // pose T_WS: transforms points represented in Sensor(IMU) coordinates
   // into World coordinates
-  const Eigen::Vector3d r_WS_W(x_[0], x_[1], x_[2]);
-  const Eigen::Quaterniond q_WS(x_[6], x_[3], x_[4], x_[5]);
-  kinematics::Transformation T_WS(r_WS_W, q_WS);
+  kinematics::Transformation T_WS(x_.r_WS_W, x_.q_WS);
 
   // the point in world coordinates
   const double ds = targetSizesMetres_[id] * 0.5;
