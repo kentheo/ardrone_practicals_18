@@ -61,7 +61,7 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
   // num diff Jacobian (central differences)
   const double delta = 1.0e-5;
   arp::kinematics::ImuKinematicsJacobian F_numDiff;
-  Eigen::Quaterniond q_SW = state_1.q_WS;
+  Eigen::Quaterniond q_SW = state_1.q_WS.inverse();
   for(size_t i=0; i<3; ++i) {
     arp::kinematics::RobotState x_1_p, x_1_m;
     arp::kinematics::RobotState x_0_p = state;
@@ -164,8 +164,8 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
     F_numDiff.block<3,1>(3,i+12) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
     F_numDiff.block<9,1>(6,i+12) = delta_x.segment<9>(7);
   }
-  //std::cout << F_numDiff << std::endl;
-  //std::cout << F << std::endl;
+  //std::cout << "F_numDiff=\n" << F_numDiff << std::endl;
+  //std::cout << "F=\n" << F << std::endl;
   if((F-F_numDiff).norm()>=1.0e-5)
     std::cout << "Wrong Jacobian: F - F_numDiff = " << std::endl << (F-F_numDiff) << std::endl;
   // now num-diff should match analytical

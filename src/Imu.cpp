@@ -6,6 +6,7 @@
  */
 
 #include <arp/kinematics/Imu.hpp>
+#include <iostream>
 
 namespace arp {
 namespace kinematics {
@@ -33,7 +34,7 @@ bool Imu::stateTransition(const RobotState & state_k_minus_1,
                          stateDerivative_k_minus_1);
   RobotState delta_x_1;
   delta_x_1.r_W = dt * stateDerivative_k_minus_1.r_dot;
-  delta_x_1.q_WS = dt * stateDerivative_k_minus_1.q_dot;
+  delta_x_1.q_WS.coeffs() = dt * stateDerivative_k_minus_1.q_dot;
   delta_x_1.v_W = dt * stateDerivative_k_minus_1.v_W_dot;
   delta_x_1.b_g = dt * stateDerivative_k_minus_1.b_g_dot;
   delta_x_1.b_a = dt * stateDerivative_k_minus_1.b_a_dot;
@@ -86,6 +87,8 @@ bool Imu::continuousTimeNonlinear(const RobotState & state,
   stateDerivative.b_g_dot.setZero();
   return true;
 }
+
+
 bool Imu::continuousTimeLinearised(const RobotState & state,
                                   const ImuMeasurement & z,
                                   ImuKinematicsJacobian & jacobian)
