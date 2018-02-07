@@ -37,7 +37,12 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
 {
   // generate random state
   arp::kinematics::RobotState state;
-  state.setRandom();
+  state.r_W.setRandom();
+  state.q_WS.setRandom();
+  state.v_W.setRandom();
+  state.b_g.setRandom();
+  state.b_a.setRandom();
+
   state.segment<4>(3) = state.q_WS().normalized().coeffs();
 
   // random measurement
@@ -57,16 +62,21 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
   // num diff Jacobian (central differences)
   const double delta = 1.0e-5;
   arp::kinematics::ImuKinematicsJacobian F_numDiff;
-  Eigen::Quaterniond q_SW = state_1.q_WS().inverse();
+  Eigen::Quaterniond q_SW = state_1.q_WS;
   for(size_t i=0; i<3; ++i) {
     arp::kinematics::RobotState x_1_p, x_1_m;
     arp::kinematics::RobotState x_0_p = state;
-    x_0_p[i] += delta;
+    x_0_p.r_W[i] += delta;
     ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
     arp::kinematics::RobotState x_0_m = state;
-    x_0_m[i] -= delta;
+    x_0_m.r_W[i] -= delta;
     ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
-    arp::kinematics::RobotState delta_x = (x_1_p-x_1_m)/(2.0*delta);
+    Eigen::Matrix<double,16,1> delta_x;
+    delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
+    delta_x.segment<4>(3) = (x_1_p.q_WS.coeffs()-x_1_m.q_WS.coeffs())/(2.0*delta);
+    delta_x.segment<3>(7) = (x_1_p.v_W-x_1_m.v_W)/(2.0*delta);
+    delta_x.segment<3>(10) = (x_1_p.b_g-x_1_m.b_g)/(2.0*delta);
+    delta_x.tail<3>() = (x_1_p.b_a-x_1_m.b_a)/(2.0*delta);
 
     // now back to mimimal dimensions
     F_numDiff.block<3,1>(0,i) = delta_x.segment<3>(0);
@@ -78,32 +88,82 @@ TEST(ImuKinematics, numericDifferencesDiscreteTime)
     arp::kinematics::RobotState x_0_p = state;
     Eigen::Vector3d deltaAlpha = Eigen::Vector3d::Zero();
     deltaAlpha[i] += delta;
-    x_0_p.segment<4>(3) = (arp::kinematics::deltaQ(deltaAlpha) * x_0_p.q_WS()).coeffs();
+    x_0_p.q_WS = (arp::kinematics::deltaQ(deltaAlpha) * x_0_p.q_WS).coeffs();
     ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
     arp::kinematics::RobotState x_0_m = state;
-    x_0_m.segment<4>(3) = (arp::kinematics::deltaQ(-deltaAlpha) * x_0_m.q_WS()).coeffs();
+    x_0_m.q_WS = (arp::kinematics::deltaQ(-deltaAlpha) * x_0_m.q_WS).coeffs();
     ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
-    arp::kinematics::RobotState delta_x = (x_1_p-x_1_m)/(2.0*delta);
+    Eigen::Matrix<double,16,1> delta_x;
+    delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
+    delta_x.segment<4>(3) = (x_1_p.q_WS.coeffs()-x_1_m.q_WS.coeffs())/(2.0*delta);
+    delta_x.segment<3>(7) = (x_1_p.v_W-x_1_m.v_W)/(2.0*delta);
+    delta_x.segment<3>(10) = (x_1_p.b_g-x_1_m.b_g)/(2.0*delta);
+    delta_x.tail<3>() = (x_1_p.b_a-x_1_m.b_a)/(2.0*delta);
 
     // now back to mimimal dimensions
     F_numDiff.block<3,1>(0,i+3) = delta_x.segment<3>(0);
     F_numDiff.block<3,1>(3,i+3) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
     F_numDiff.block<9,1>(6,i+3) = delta_x.segment<9>(7);
   }
-  for(size_t i=7; i<16; ++i) {
+  for(size_t i=0; i<3; ++i) {
     arp::kinematics::RobotState x_1_p, x_1_m;
     arp::kinematics::RobotState x_0_p = state;
-    x_0_p[i] += delta;
+    x_0_p.v_W[i] += delta;
     ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
     arp::kinematics::RobotState x_0_m = state;
-    x_0_m[i] -= delta;
+    x_0_m.v_W[i] -= delta;
     ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
-    arp::kinematics::RobotState delta_x = (x_1_p-x_1_m)/(2.0*delta);
+    Eigen::Matrix<double,16,1> delta_x;
+    delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
+    delta_x.segment<4>(3) = (x_1_p.q_WS.coeffs()-x_1_m.q_WS.coeffs())/(2.0*delta);
+    delta_x.segment<3>(7) = (x_1_p.v_W-x_1_m.v_W)/(2.0*delta);
+    delta_x.segment<3>(10) = (x_1_p.b_g-x_1_m.b_g)/(2.0*delta);
+    delta_x.tail<3>() = (x_1_p.b_a-x_1_m.b_a)/(2.0*delta);
 
     // now back to mimimal dimensions
-    F_numDiff.block<3,1>(0,i-1) = delta_x.segment<3>(0);
-    F_numDiff.block<3,1>(3,i-1) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
-    F_numDiff.block<9,1>(6,i-1) = delta_x.segment<9>(7);
+    F_numDiff.block<3,1>(0,i+6) = delta_x.segment<3>(0);
+    F_numDiff.block<3,1>(3,i+6) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
+    F_numDiff.block<9,1>(6,i+6) = delta_x.segment<9>(7);
+  }
+  for(size_t i=0; i<3; ++i) {
+    arp::kinematics::RobotState x_1_p, x_1_m;
+    arp::kinematics::RobotState x_0_p = state;
+    x_0_p.b_g[i] += delta;
+    ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
+    arp::kinematics::RobotState x_0_m = state;
+    x_0_m.b_g[i] -= delta;
+    ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
+    Eigen::Matrix<double,16,1> delta_x;
+    delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
+    delta_x.segment<4>(3) = (x_1_p.q_WS.coeffs()-x_1_m.q_WS.coeffs())/(2.0*delta);
+    delta_x.segment<3>(7) = (x_1_p.v_W-x_1_m.v_W)/(2.0*delta);
+    delta_x.segment<3>(10) = (x_1_p.b_g-x_1_m.b_g)/(2.0*delta);
+    delta_x.tail<3>() = (x_1_p.b_a-x_1_m.b_a)/(2.0*delta);
+
+    // now back to mimimal dimensions
+    F_numDiff.block<3,1>(0,i+9) = delta_x.segment<3>(0);
+    F_numDiff.block<3,1>(3,i+9) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
+    F_numDiff.block<9,1>(6,i+9) = delta_x.segment<9>(7);
+  }
+  for(size_t i=0; i<3; ++i) {
+    arp::kinematics::RobotState x_1_p, x_1_m;
+    arp::kinematics::RobotState x_0_p = state;
+    x_0_p.b_a[i] += delta;
+    ImuTest::stateTransition(x_0_p, measurement_0, measurement_1, x_1_p);
+    arp::kinematics::RobotState x_0_m = state;
+    x_0_m.b_a[i] -= delta;
+    ImuTest::stateTransition(x_0_m, measurement_0, measurement_1, x_1_m);
+    Eigen::Matrix<double,16,1> delta_x;
+    delta_x.head<3>() = (x_1_p.r_W-x_1_m.r_W)/(2.0*delta);
+    delta_x.segment<4>(3) = (x_1_p.q_WS.coeffs()-x_1_m.q_WS.coeffs())/(2.0*delta);
+    delta_x.segment<3>(7) = (x_1_p.v_W-x_1_m.v_W)/(2.0*delta);
+    delta_x.segment<3>(10) = (x_1_p.b_g-x_1_m.b_g)/(2.0*delta);
+    delta_x.tail<3>() = (x_1_p.b_a-x_1_m.b_a)/(2.0*delta);
+
+    // now back to mimimal dimensions
+    F_numDiff.block<3,1>(0,i+12) = delta_x.segment<3>(0);
+    F_numDiff.block<3,1>(3,i+12) = 2*(arp::kinematics::oplus(q_SW)*delta_x.segment<4>(3)).head<3>();
+    F_numDiff.block<9,1>(6,i+12) = delta_x.segment<9>(7);
   }
   //std::cout << F_numDiff << std::endl;
   //std::cout << F << std::endl;
@@ -129,8 +189,12 @@ TEST(ViEkfTest, predictState) {
 
   // initialise random state
   arp::kinematics::RobotState state;
-  state << 0.902131,   1.60338,   2.64148,    5.2336,  -2.66092,  0.702473,  -2.00367,  -2.29765,  0.704136,   1.51915,   3.82437,  0.499508,   2.02314,  -1.28832,   1.77941,  0.307377;
-  state.segment<4>(3) = state.q_WS().normalized().coeffs();
+  state.r_W << 0.902131,   1.60338,   2.64148;
+  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473  -2.00367;
+  state.q_WS.normalize();
+  state.v_W << -2.29765,  0.704136,   1.51915;
+  state.b_g << 3.82437,  0.499508,   2.02314;
+  state.b_a << -1.28832,   1.77941,  0.307377;
   Eigen::Matrix<double, 15, 15> P;
   P <<   
   6.84348,  0.317284,   1.42921,  0.902131,  -1.09333, -0.254766,   -3.2244,   2.61621,   2.27235,   1.10791, -0.637078,  0.328422,  0.527314,   1.03198,  0.307377,
@@ -185,8 +249,11 @@ TEST(ViEkfTest, predictState) {
 
   // with own computation:
   arp::kinematics::RobotState newState2;
-  newState2 << 0.856562,   1.61761,   2.67016,  0.853628, -0.414882, 0.0963025, -0.299862,  -2.25908,   
-      0.7198,    1.3482,   3.82437,  0.499508,   2.02314,  -1.28832,   1.77941,  0.307377;
+  newState2.r_W << 0.856562,   1.61761,   2.67016;
+  newState2.q_WS.coeffs() << 0.853628, -0.414882, 0.0963025, -0.299862;
+  newState2.v_W << -2.25908,  0.7198,    1.3482;
+  newState2.b_g << 3.82437,  0.499508,   2.02314;
+  newState2.b_a << -1.28832,   1.77941,  0.307377;
 
   EXPECT_TRUE((newState-newState2).norm()<1.0e-4);
 }
@@ -207,8 +274,13 @@ TEST(ViEkfTest, updateState) {
 
   // initialise random state
   arp::kinematics::RobotState state;
-  state << 0.902131,   1.60338,   2.64148,    5.2336,  -2.66092,  0.702473,  -2.00367,  -2.29765,  0.704136,   1.51915,   3.82437,  0.499508,   2.02314,  -1.28832,   1.77941, 0.307377;
-  state.segment<4>(3) = state.q_WS().normalized().coeffs();
+  arp::kinematics::RobotState state;
+  state.r_W << 0.902131,   1.60338,   2.64148;
+  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473  -2.00367;
+  state.q_WS.normalize();
+  state.v_W << -2.29765,  0.704136,   1.51915;
+  state.b_g << 3.82437,  0.499508,   2.02314;
+  state.b_a << -1.28832,   1.77941,  0.307377;
   Eigen::Matrix<double, 15, 15> P;
   P <<   
   6.84348,  0.317284,   1.42921,  0.902131,  -1.09333, -0.254766,   -3.2244,   2.61621,   2.27235,   1.10791, -0.637078,  0.328422,  0.527314,   1.03198,  0.307377,
@@ -255,8 +327,11 @@ TEST(ViEkfTest, updateState) {
 
   // with own computation:
   arp::kinematics::RobotState newState2;
-  newState2 <<  0.902192, 1.60335, 2.64146, 0.83826, -0.426184,  0.112569, -0.320961, -2.29762,  
-          0.704153,   1.51912,   3.82441,  0.499508,   2.02315,  -1.28833,   1.77946,  0.307319;
+  newState2.r_W <<  0.902192, 1.60335,  2.64146;
+  newState2.q_WS.coeffs() << 0.83826, -0.426184,  0.112569, -0.320961;
+  newState2.v_W << -2.29762,  0.704153,  1.51912;
+  newState2.b_g <<  3.82441,  0.499508,  2.02315;
+  newState2.b_a << -1.28833,  1.77946,  0.307319;
 
   EXPECT_TRUE((newState-newState2).norm()<1.0e-4);
 }
