@@ -115,9 +115,11 @@ void VisualInertialTracker::processingLoop()
           estimator_->get_T_WT(detections[bestI].id, T_WT);
           kinematics::Transformation T_WS = (T_WT
               * detections[bestI].T_CT.inverse() * estimator_->T_SC().inverse());
-					x.head<3>() = T_WS.r();
-					x.segment<4>(3) = T_WS.q().coeffs();
-					x.tail<9>().setZero();
+          x.r_W = T_WS.r();
+          x.q_WS = T_WS.q();
+          x.v_W.setZero();
+          x.b_g.setZero();
+          x.b_a.setZero();
           P.block<3, 3>(0, 0) *= 0.0001 * bestI * bestI;  // 1 cm
           P.block<3, 3>(3, 3) *= (0.5 / 60.0) * (0.5 / 60.0);  // 0.5 degree
           P.block<3, 3>(6, 6) *= 0.01 * 0.01;  // 10 cm/s
