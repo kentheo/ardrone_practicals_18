@@ -338,7 +338,7 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
 
   // TODO: compute Kalman gain K
 
-  // TODO: compute increment Delta_x
+  // TODO: compute increment Delta_chi
 
   // TODO: perform update. Note: multiplicative for the quaternion!!
 
