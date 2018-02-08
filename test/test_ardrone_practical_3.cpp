@@ -189,7 +189,7 @@ TEST(ViEkfTest, predictState) {
   // initialise random state
   arp::kinematics::RobotState state;
   state.r_W << 0.902131,   1.60338,   2.64148;
-  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473  -2.00367;
+  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473,  -2.00367;
   state.q_WS.normalize();
   state.v_W << -2.29765,  0.704136,   1.51915;
   state.b_g << 3.82437,  0.499508,   2.02314;
@@ -279,7 +279,7 @@ TEST(ViEkfTest, updateState) {
   // initialise random state
   arp::kinematics::RobotState state;
   state.r_W << 0.902131,   1.60338,   2.64148;
-  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473  -2.00367;
+  state.q_WS.coeffs() << 5.2336,  -2.66092,  0.702473,  -2.00367;
   state.q_WS.normalize();
   state.v_W << -2.29765,  0.704136,   1.51915;
   state.b_g << 3.82437,  0.499508,   2.02314;
