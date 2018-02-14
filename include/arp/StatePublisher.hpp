@@ -31,7 +31,7 @@ public:
   void publish(uint64_t timeMicroseconds,
                     const arp::kinematics::RobotState& x)
   {
-    arp::kinematics::Transformation T_WS(x.r_W(), x.q_WS());
+    arp::kinematics::Transformation T_WS(x.r_W, x.q_WS);
     geometry_msgs::PoseStamped poseMsg;
     poseMsg.header.frame_id = "world";
     // rviz can't handle original timestamps. won't matter, it's visualisation only...
