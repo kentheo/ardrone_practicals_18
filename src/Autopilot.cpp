@@ -43,6 +43,13 @@ Autopilot::DroneStatus Autopilot::droneStatus()
     std::lock_guard<std::mutex> l(navdataMutex_);
     navdata = lastNavdata_;
   }
+  if(navdata.altd < 600.0 && (navdata.state == arp::Autopilot::Flying ||
+                              navdata.state == arp::Autopilot::Hovering ||
+                              navdata.state == arp::Autopilot::Flying2)) {
+    // so, effectively the ardrone_autonomy package is doing something weird. Let's fix.
+    // \todo The 600 mm threshold is quite arbitrary -- this should not be hard-coded.
+    navdata.state = arp::Autopilot::Unknown;
+  }
   return DroneStatus(navdata.state);
 }
 
