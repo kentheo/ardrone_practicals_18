@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     if (subscriber.getLastImage(image)) {
 
       // TODO: add overlays to the cv::Mat image, e.g. text
-      
+
       // http://stackoverflow.com/questions/22702630/converting-cvmat-to-sdl-texture
       //Convert to SDL_Surface
       IplImage opencvimg2 = (IplImage) image;
@@ -159,6 +159,16 @@ int main(int argc, char **argv)
       }
     }
 
+    if (state[SDL_SCANCODE_C]) {
+      std::cout << "Requesting flattrim calibration...     status=" << droneStatus;
+      bool success = autopilot.flattrimCalibrate();
+      if (success) {
+        std::cout << " [ OK ]" << std::endl;
+      } else {
+        std::cout << " [FAIL]" << std::endl;
+      }
+    }
+
     // TODO: process moving commands when in state 3,4, or 7
   }
 
@@ -171,4 +181,3 @@ int main(int argc, char **argv)
   SDL_DestroyWindow(window);
   SDL_Quit();
 }
-
