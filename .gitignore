@@ -1,0 +1,10 @@
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+Makefile
+catkin/
+catkin_generated/
+cmake_install.cmake
+devel/
+gtest/
+

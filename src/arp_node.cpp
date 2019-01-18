@@ -80,8 +80,20 @@ int main(int argc, char **argv)
   SDL_Texture * texture;
 
   // enter main event loop
-  std::cout << "===== Hello AR Drone ====" << std::endl;
+  std::cout << "===== Hello AR Drone EDIT ====" << std::endl;
+
+  double vel_forward = 1.;
+  double vel_left = 1.;
+  double vel_up = 1.;
+  double vel_rotateLeft = 1.;
+
+  double forward = 0.0;
+  double left = 0.0;
+  double up = 0.0;
+  double rotateLeft = 0.0;
+
   while (ros::ok()) {
+
     ros::spinOnce();
     ros::Duration dur(0.04);
     dur.sleep();
@@ -95,7 +107,13 @@ int main(int argc, char **argv)
     if (subscriber.getLastImage(image)) {
 
       // TODO: add overlays to the cv::Mat image, e.g. text
-
+      cv::putText(image, 
+      "forward/backward: UP-arrow/DOWN-arrow\n \
+      left/right: LEFT-arrow/RIGHT-arrow\n \
+      up/down: W/S\n \
+      yaw left/right A/D\n ",
+      cvPoint(30,30), 
+      cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0,0,0), 1, CV_AA);
       // http://stackoverflow.com/questions/22702630/converting-cvmat-to-sdl-texture
       //Convert to SDL_Surface
       IplImage opencvimg2 = (IplImage) image;
@@ -117,6 +135,12 @@ int main(int argc, char **argv)
 
     //Multiple Key Capture Begins
     const Uint8 *state = SDL_GetKeyboardState(NULL);
+
+    // reset velocities to 0 if nothing is pressed
+    forward = 0;
+    left = 0;
+    up = 0;
+    rotateLeft = 0;
 
     // check states!
     auto droneStatus = autopilot.droneStatus();
@@ -159,17 +183,53 @@ int main(int argc, char **argv)
       }
     }
 
-    if (state[SDL_SCANCODE_C]) {
-      std::cout << "Requesting flattrim calibration...     status=" << droneStatus;
-      bool success = autopilot.flattrimCalibrate();
-      if (success) {
-        std::cout << " [ OK ]" << std::endl;
-      } else {
-        std::cout << " [FAIL]" << std::endl;
-      }
+    if (state[SDL_SCANCODE_UP]) {
+      std::cout << "Forward..." << std::endl;
+      forward = vel_forward;
+    }
+    if (state[SDL_SCANCODE_DOWN]) {
+      std::cout << "Backward..." << std::endl;
+      forward = -vel_forward;
+    }
+    if (state[SDL_SCANCODE_LEFT]) {
+      std::cout << "Left..." << std::endl;
+      left = vel_left;
+    }
+    if (state[SDL_SCANCODE_RIGHT]) {
+      std::cout << "Right..." << std::endl;
+      left = -vel_left;
+    }
+    if (state[SDL_SCANCODE_W]) {
+      std::cout << "Up..." << std::endl;
+      up = vel_up;
+    }
+    if (state[SDL_SCANCODE_S]) {
+      std::cout << "Down..." << std::endl;
+      up = -vel_up;
+    }
+    if (state[SDL_SCANCODE_A]) {
+      std::cout << "Yaw left..." << std::endl;
+      rotateLeft = vel_rotateLeft;
+    }
+    if (state[SDL_SCANCODE_D]) {
+      std::cout << "Yaw right..." << std::endl;
+      rotateLeft = -vel_rotateLeft;
     }
 
     // TODO: process moving commands when in state 3,4, or 7
+
+    // send commands:
+    std::cout << "Sending " 
+              << " Forward: " << forward 
+              << " Left: " << left
+              << " Up: " << up
+              << " RotateLeft: " << rotateLeft;
+    bool success = autopilot.manualMove(forward,left,up,rotateLeft);
+    if (success) {
+        std::cout << " [ OK ]" << std::endl;
+    } else {
+        std::cout << " [FAIL]" << std::endl;
+    }
   }
 
   // make sure to land the drone...

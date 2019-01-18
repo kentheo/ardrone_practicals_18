@@ -100,13 +100,30 @@ bool Autopilot::manualMove(double forward, double left, double up,
   return move(forward, left, up, rotateLeft);
 }
 
+// returns value clamped to interval
+float clamp(double lower, double value, double upper)
+{
+  if (value > upper)
+    return upper;
+  else if (value < lower)
+    return lower;
+  else 
+    return value;
+}
+
 // Move the drone.
 bool Autopilot::move(double forward, double left , double up, double rotateLeft)
 {
     DroneStatus status = droneStatus();
     if (status != DroneStatus::Landed && status != DroneStatus::Landing
         && status != DroneStatus::Looping) {
+
+            
             geometry_msgs::Twist moveMsg;
+            // moveMsg.linear.x = clamp(-1., forward, 1.);
+            // moveMsg.linear.y = clamp(-1., left, 1.);
+            // moveMsg.linear.z = clamp(-1., up, 1.);
+            // moveMsg.angular.z = clamp(-1., rotateLeft, 1.);
             moveMsg.linear.x = forward;
             moveMsg.linear.y = left;
             moveMsg.linear.z = up;
