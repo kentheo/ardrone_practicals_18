@@ -22,6 +22,7 @@
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
 
+
 namespace arp {
 
 /// \brief The autopilot highlevel interface for commanding the drone manually or automatically.

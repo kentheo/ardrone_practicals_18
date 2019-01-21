@@ -92,6 +92,8 @@ int main(int argc, char **argv)
   double up = 0.0;
   double rotateLeft = 0.0;
 
+  // ros::Rate rate(10);
+
   while (ros::ok()) {
 
     ros::spinOnce();
@@ -230,7 +232,11 @@ int main(int argc, char **argv)
     } else {
         std::cout << " [FAIL]" << std::endl;
     }
+    // bool success = autopilot.manualMove(0,1,0,0);
+    std::cout << " ";
   }
+
+  // 2>&1 | tee SomeFile.txt
 
   // make sure to land the drone...
   bool success = autopilot.land();

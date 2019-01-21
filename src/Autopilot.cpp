@@ -115,8 +115,13 @@ float clamp(double lower, double value, double upper)
 bool Autopilot::move(double forward, double left , double up, double rotateLeft)
 {
     DroneStatus status = droneStatus();
-    if (status != DroneStatus::Landed && status != DroneStatus::Landing
-        && status != DroneStatus::Looping) {
+    std::cout << std::endl << "Status: " << status << std::endl;
+    if (status==DroneStatus::TakingOff)
+      std::cout << "TAKING OFF!!!! " << std::endl;
+    if (status == DroneStatus::Flying || status==DroneStatus::Flying2
+        || status == DroneStatus::Hovering){
+    // if (status != DroneStatus::Landed && status != DroneStatus::Landing
+    //     && status != DroneStatus::Looping) {
 
             
             geometry_msgs::Twist moveMsg;
