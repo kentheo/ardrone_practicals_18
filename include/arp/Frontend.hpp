@@ -36,6 +36,9 @@ class Frontend
                            double imageCenterV, double k1, double k2, double p1,
                            double p2);
 
+  /// \brief Destructor
+  ~Frontend();
+
   /// \brief The undistorted camera model used for the estimator.
   arp::cameras::PinholeCamera<arp::cameras::NoDistortion> undistortedCameraModel() const;
 
@@ -56,8 +59,7 @@ class Frontend
  protected:
   AprilTags::TagDetector tagDetector_ = AprilTags::TagDetector(
       AprilTags::tagCodes36h11);
-  std::shared_ptr<
-      arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>> camera_;
+  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>* camera_ = nullptr;
   std::map<int,double> idToSize_;
 };
 
