@@ -44,6 +44,17 @@ Autopilot::DroneStatus Autopilot::droneStatus()
   return DroneStatus(navdata.state);
 }
 
+// Get the remaining battery percentage
+float Autopilot::batteryStatus()
+{
+  ardrone_autonomy::Navdata navdata;
+  {
+    std::lock_guard<std::mutex> l(navdataMutex_);
+    navdata = lastNavdata_;
+  }
+  return navdata.batteryPercent;
+}
+
 // Request flattrim calibration.
 bool Autopilot::flattrimCalibrate()
 {
@@ -115,15 +126,8 @@ float clamp(double lower, double value, double upper)
 bool Autopilot::move(double forward, double left , double up, double rotateLeft)
 {
     DroneStatus status = droneStatus();
-    std::cout << std::endl << "Status: " << status << std::endl;
-    if (status==DroneStatus::TakingOff)
-      std::cout << "TAKING OFF!!!! " << std::endl;
     if (status == DroneStatus::Flying || status==DroneStatus::Flying2
         || status == DroneStatus::Hovering){
-    // if (status != DroneStatus::Landed && status != DroneStatus::Landing
-    //     && status != DroneStatus::Looping) {
-
-            
             geometry_msgs::Twist moveMsg;
             // moveMsg.linear.x = clamp(-1., forward, 1.);
             // moveMsg.linear.y = clamp(-1., left, 1.);
@@ -136,8 +140,6 @@ bool Autopilot::move(double forward, double left , double up, double rotateLeft)
             pubMove_.publish(moveMsg);
             return true;
         }
-
-
   return false;
 }
 

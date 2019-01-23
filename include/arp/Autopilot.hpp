@@ -22,6 +22,8 @@
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
 
+#include <string>
+
 
 namespace arp {
 
@@ -48,6 +50,8 @@ class Autopilot {
   /// \brief Get the drone status.
   /// \return The status.
   DroneStatus droneStatus();
+
+  float batteryStatus();
 
   /// \brief Set to automatic control mode.
   void setManual();

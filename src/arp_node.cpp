@@ -18,6 +18,12 @@
 
 #include <arp/Autopilot.hpp>
 
+
+// notes:
+// cd ~/ardrone_ws
+// catkin_make -DCMAKE_BUILD_TYPE=Release
+// roslaunch ardrone_practicals arp.launch
+
 class Subscriber
 {
  public:
@@ -82,10 +88,11 @@ int main(int argc, char **argv)
   // enter main event loop
   std::cout << "===== Hello AR Drone EDIT ====" << std::endl;
 
-  double vel_forward = 1.;
-  double vel_left = 1.;
-  double vel_up = 1.;
-  double vel_rotateLeft = 1.;
+  // should not be greater than 1:
+  const double vel_forward = 1.;
+  const double vel_left = 1.;
+  const double vel_up = 1.;
+  const double vel_rotateLeft = 1.;
 
   double forward = 0.0;
   double left = 0.0;
@@ -104,18 +111,44 @@ int main(int argc, char **argv)
       break;
     }
 
+    // check states!
+    auto droneStatus = autopilot.droneStatus();
+
     // render image, if there is a new one available
     cv::Mat image;
     if (subscriber.getLastImage(image)) {
 
       // TODO: add overlays to the cv::Mat image, e.g. text
       cv::putText(image, 
-      "forward/backward: UP-arrow/DOWN-arrow\n \
-      left/right: LEFT-arrow/RIGHT-arrow\n \
-      up/down: W/S\n \
-      yaw left/right A/D\n ",
-      cvPoint(30,30), 
-      cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0,0,0), 1, CV_AA);
+      "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
+      cvPoint(10,10), 
+      cv::FONT_HERSHEY_COMPLEX_SMALL, 0.4, cvScalar(0,0,0), 1, CV_AA);
+      
+      float batteryStatus = autopilot.batteryStatus();
+      std::ostringstream batteryString;
+      batteryString << "Battery: " << batteryStatus << "%";
+      cv::putText(image, batteryString.str().c_str(),
+      cvPoint(10,30), 
+      cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(0,255,0), 1, CV_AA);
+      cv::String droneStatusString;
+      switch(droneStatus)
+      {
+        case 0: droneStatusString = "[Unknown]"; break;
+        case 1: droneStatusString = "[Inited]"; break;
+        case 2: droneStatusString = "[Landed]"; break;
+        case 3: droneStatusString = "[Flying]"; break;
+        case 4: droneStatusString = "[Hovering]"; break;
+        case 5: droneStatusString = "[Test]"; break;
+        case 6: droneStatusString = "[TakingOff]"; break;
+        case 7: droneStatusString = "[Flying2]"; break;
+        case 8: droneStatusString = "[Landing]"; break;
+        case 9: droneStatusString = "[Looping]"; break;
+      }
+      cv::putText(image, droneStatusString,
+      cvPoint(10,40), 
+      cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(0,0,255), 1, CV_AA);
+      
+     
       // http://stackoverflow.com/questions/22702630/converting-cvmat-to-sdl-texture
       //Convert to SDL_Surface
       IplImage opencvimg2 = (IplImage) image;
@@ -144,8 +177,7 @@ int main(int argc, char **argv)
     up = 0;
     rotateLeft = 0;
 
-    // check states!
-    auto droneStatus = autopilot.droneStatus();
+    
     // command
     if (state[SDL_SCANCODE_ESCAPE]) {
       std::cout << "ESTOP PRESSED, SHUTTING OFF ALL MOTORS status=" << droneStatus;
@@ -232,8 +264,9 @@ int main(int argc, char **argv)
     } else {
         std::cout << " [FAIL]" << std::endl;
     }
-    // bool success = autopilot.manualMove(0,1,0,0);
-    std::cout << " ";
+    
+    
+    
   }
 
   // 2>&1 | tee SomeFile.txt
