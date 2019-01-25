@@ -119,16 +119,16 @@ int main(int argc, char **argv)
     if (subscriber.getLastImage(image)) {
 
       // TODO: add overlays to the cv::Mat image, e.g. text
-      cv::putText(image, 
+      cv::putText(image,
       "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
-      cvPoint(10,10), 
+      cvPoint(10,10),
       cv::FONT_HERSHEY_COMPLEX_SMALL, 0.4, cvScalar(0,0,0), 1, CV_AA);
-      
+
       float batteryStatus = autopilot.batteryStatus();
       std::ostringstream batteryString;
       batteryString << "Battery: " << batteryStatus << "%";
       cv::putText(image, batteryString.str().c_str(),
-      cvPoint(10,30), 
+      cvPoint(10,30),
       cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(0,255,0), 1, CV_AA);
       cv::String droneStatusString;
       switch(droneStatus)
@@ -145,10 +145,10 @@ int main(int argc, char **argv)
         case 9: droneStatusString = "[Looping]"; break;
       }
       cv::putText(image, droneStatusString,
-      cvPoint(10,40), 
+      cvPoint(10,40),
       cv::FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(0,0,255), 1, CV_AA);
-      
-     
+
+
       // http://stackoverflow.com/questions/22702630/converting-cvmat-to-sdl-texture
       //Convert to SDL_Surface
       IplImage opencvimg2 = (IplImage) image;
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
     up = 0;
     rotateLeft = 0;
 
-    
+
     // command
     if (state[SDL_SCANCODE_ESCAPE]) {
       std::cout << "ESTOP PRESSED, SHUTTING OFF ALL MOTORS status=" << droneStatus;
@@ -253,20 +253,22 @@ int main(int argc, char **argv)
     // TODO: process moving commands when in state 3,4, or 7
 
     // send commands:
-    std::cout << "Sending " 
-              << " Forward: " << forward 
+    std::cout << "Sending "
+              << " Forward: " << forward
               << " Left: " << left
               << " Up: " << up
               << " RotateLeft: " << rotateLeft;
+    //send the move command to drone
     bool success = autopilot.manualMove(forward,left,up,rotateLeft);
+    
     if (success) {
         std::cout << " [ OK ]" << std::endl;
     } else {
         std::cout << " [FAIL]" << std::endl;
     }
-    
-    
-    
+
+
+
   }
 
   // 2>&1 | tee SomeFile.txt
