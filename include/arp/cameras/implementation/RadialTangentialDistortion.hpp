@@ -4,7 +4,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -71,13 +71,13 @@ bool RadialTangentialDistortion::distort(
 {
   // TODO: implement
   double r_sq = pow(pointUndistorted(0),2)+pow(pointUndistorted(1),2);
-  double radial = (1 + this->k1_*r_sq + this->k2_ * pow(r_sq,2)) * pointUndistorted;
+  Eigen::Vector2d radial = (1 + this->k1_*r_sq + this->k2_ * pow(r_sq,2)) * pointUndistorted;
   Eigen::Vector2d tangential(2);
   tangential(0) = 2*this->p1_*pointUndistorted(0)*pointUndistorted(1)+
                   this->p2_*(r_sq+2*pow(pointUndistorted(0),2));
   tangential(1) = this->p1_ * (r_sq + 2*pow(pointUndistorted(1),2))+2*this->p2_*pointUndistorted(0)*
                   pointUndistorted(1);
-  
+
   *pointDistorted = radial + tangential;
 	// throw std::runtime_error("not implemented");
   return true;
@@ -88,7 +88,7 @@ bool RadialTangentialDistortion::distort(
     Eigen::Matrix2d * pointJacobian) const
 {
   bool success = distort(pointUndistorted,pointDistorted);
-  
+
   // For now: numeric differences on Jacobian.
   // TODO: implement proper Jacobian in practical No. 3
   Eigen::Matrix2d & J = *pointJacobian;
