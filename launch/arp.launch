@@ -33,6 +33,6 @@
   </node>
   <!-- Launch estimator / control arp_node. -->
   <node name="arp_node" pkg="ardrone_practicals" type="arp_node" output="screen">
-	  <remap from="/cmd_vel" to="/cmd_vel_test"/>
+	  <remap from="/cmd_vel" to="/cmd_vel"/>
 	</node>
 </launch>
