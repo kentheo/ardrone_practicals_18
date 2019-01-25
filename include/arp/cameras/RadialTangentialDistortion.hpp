@@ -4,7 +4,7 @@
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above copyright notice,
@@ -66,7 +66,7 @@ class RadialTangentialDistortion : public DistortionBase
   /// \brief Unit test support -- create a test distortion object
   static RadialTangentialDistortion testObject()
   {
-    return RadialTangentialDistortion(-0.16, 0.15, 0.0003, 0.0002);
+    return RadialTangentialDistortion(-0.541596, 0.307486, -0.000014, 0.001816);
   }
 
   //////////////////////////////////////////////////////////////

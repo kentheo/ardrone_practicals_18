@@ -48,10 +48,10 @@ namespace cameras {
 
 // The default constructor with all zero ki
 RadialTangentialDistortion::RadialTangentialDistortion()
-    : k1_(0.0),
-      k2_(0.0),
-      p1_(0.0),
-      p2_(0.0)
+    : k1_(-0.541596),
+      k2_(0.307486),
+      p1_(-0.000014),
+      p2_(0.001816)
 {
 }
 

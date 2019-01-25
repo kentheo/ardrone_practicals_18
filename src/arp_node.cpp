@@ -17,6 +17,10 @@
 #include <std_srvs/Empty.h>
 
 #include <arp/Autopilot.hpp>
+#include <arp/cameras/RadialTangentialDistortion.hpp>
+#include <arp/cameras/PinholeCamera.hpp>
+#include <arp/cameras/CameraBase.hpp>
+#include <arp/cameras/DistortionBase.hpp>
 
 
 // notes:
@@ -99,6 +103,19 @@ int main(int argc, char **argv)
   double up = 0.0;
   double rotateLeft = 0.0;
 
+  float k1 = -0.541596;
+  float k2 = 0.307486;
+  float p1 = -0.000014;
+  float p2 = 0.001816;
+
+  arp::cameras::RadialTangentialDistortion radDist(k1, k2, p1, p2);
+
+  // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
+  //TODO: find the correct parameters
+  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion> pinCam(1,2,3,4,5,6, radDist);
+  //without this image is not rendered
+  pinCam.initialiseUndistortMaps();
+
   // ros::Rate rate(10);
 
   while (ros::ok()) {
@@ -111,12 +128,15 @@ int main(int argc, char **argv)
       break;
     }
 
-    // check states!
+    // check states!640, 360, 350, 360, 320, 130,
     auto droneStatus = autopilot.droneStatus();
 
     // render image, if there is a new one available
     cv::Mat image;
     if (subscriber.getLastImage(image)) {
+
+      // Undistort image
+      pinCam.undistortImage(image, image);
 
       // TODO: add overlays to the cv::Mat image, e.g. text
       cv::putText(image,
@@ -260,7 +280,7 @@ int main(int argc, char **argv)
               << " RotateLeft: " << rotateLeft;
     //send the move command to drone
     bool success = autopilot.manualMove(forward,left,up,rotateLeft);
-    
+
     if (success) {
         std::cout << " [ OK ]" << std::endl;
     } else {
