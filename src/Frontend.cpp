@@ -32,7 +32,7 @@ void Frontend::setCameraParameters(int imageWidth, int imageHeight,
 }
 
 // the undistorted camera model used for the estimator (later)
-arp::cameras::PinholeCamera<arp::cameras::NoDistortion> 
+arp::cameras::PinholeCamera<arp::cameras::NoDistortion>
     Frontend::undistortedCameraModel() const {
   assert(camera_);
   return camera_->undistortedPinholeCamera();
@@ -55,18 +55,16 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   cv::cvtColor(image, image, CV_BGR2GRAY);
   std::vector<vpHomogeneousMatrix> cMo_vec;
   tagDetector_.detect(image,tagSize, camera, cMo_vec);
-  int number_detections = detector.getNbObjects();
+  int number_detections = tagDetector_.getNbObjects();
   for (size_t i = 0; i < number_detections; i++) {
     Detection detection; // maybe add arp:: etc.
     detection.T_CT = kinematics::Transformation(cMo_vec[i]);
     detection.points = tagDetector_.getPolygon(i);
     detection.id = i;
+    detections.push_back(detection);
     }
     // std::vector<vpImagePoint> p = detector.getPolygon(i);
-    // idToSize_[i] 
-  
-
-
+    // idToSize_[i]
 
    /// \brief A simple struct containing all the necessary information about a
   ///        tag detection.
@@ -78,10 +76,6 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   // };
   // typedef std::vector<Detection, Eigen::aligned_allocator<Detection>> DetectionVec;
 
-
-
-  
-  
   return number_detections;
   // throw std::runtime_error("not implemented");
   // return 0; // TODO: number of detections...
@@ -93,4 +87,3 @@ bool Frontend::setTarget(unsigned int id, double targetSizeMeters) {
 }
 
 }  // namespace arp
-
