@@ -48,21 +48,33 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   const float p2 = 0.001816;
   const float tagSize =16.75;
 
+  setTarget(0, tagSize); // to register 1 target, should be changed if we have more
+
   // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
-  this->setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
-  camera = this->undistortedCameraModel();
-  camera.undistortImage(image,image);
-  cv::cvtColor(image, image, CV_BGR2GRAY);
-  std::vector<vpHomogeneousMatrix> cMo_vec;
-  tagDetector_.detect(image,tagSize, camera, cMo_vec);
-  int number_detections = tagDetector_.getNbObjects();
-  for (size_t i = 0; i < number_detections; i++) {
-    Detection detection; // maybe add arp:: etc.
-    detection.T_CT = kinematics::Transformation(cMo_vec[i]);
-    detection.points = tagDetector_.getPolygon(i);
-    detection.id = i;
-    detections.push_back(detection);
-    }
+  setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
+  auto camera = undistortedCameraModel();
+  cv::Mat undistorted_image;
+  camera.undistortImage(image,undistorted_image);
+  cv::Mat undistorted_grey_image;
+  cv::cvtColor(undistorted_image, undistorted_grey_image, CV_BGR2GRAY);
+
+  // Go through all registerd ID tags (only 1 here, ID 0)
+  std::map<int,double>::iterator it;
+  for (it = idToSize_.begin(); it != idToSize_.end(); it++)
+  {
+    // std::vector<vpHomogeneousMatrix> cMo_vec;
+    std::vector<vpHomogeneousMatrix> cMo_vec;
+    tagDetector_.detect(undistorted_grey_image,tagSize, camera, cMo_vec);
+    int number_detections = tagDetector_.getNbObjects();
+    for (size_t i = 0; i < number_detections; i++) {
+      Detection detection; // maybe add arp:: etc.
+      detection.T_CT = kinematics::Transformation(cMo_vec[i]);
+      detection.points = tagDetector_.getPolygon(i);
+      detection.id = i;
+      detections.push_back(detection);
+      }
+  }
+  
     // std::vector<vpImagePoint> p = detector.getPolygon(i);
     // idToSize_[i]
 

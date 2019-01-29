@@ -19,6 +19,14 @@
 #include <arp/cameras/NoDistortion.hpp>
 #include <arp/kinematics/Transformation.hpp>
 
+// newly added:
+// #include <visp3/core/vpHomogeneousMatrix.h>
+// #include <visp3/detection/vpDetectorAprilTag.h>
+// #include <visp3/gui/vpDisplayGDI.h>
+// #include <visp3/gui/vpDisplayOpenCV.h>
+// #include <visp3/gui/vpDisplayX.h>
+// #include <visp3/io/vpImageIo.h>
+
 namespace arp {
 
 ///\brief This class processes an image and returns the detected marker poses.
