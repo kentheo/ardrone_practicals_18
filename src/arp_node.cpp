@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
   // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
   //TODO: find the correct parameters
-  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion> pinCam(1,2,3,4,5,6, radDist);
+  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion> pinCam(640,360,569.46,572.26,320.00,149.25, radDist);
   //without this image is not rendered
   pinCam.initialiseUndistortMaps();
 
