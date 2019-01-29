@@ -47,6 +47,10 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   const float p1 = -0.000014;
   const float p2 = 0.001816;
   const float tagSize =16.75;
+  const float fu = 569.46;
+  const float fv = 572.26;
+  const float cu = 320.00;
+  const float cv = 149.25;
 
   setTarget(0, tagSize); // to register 1 target, should be changed if we have more
 
@@ -58,27 +62,44 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   cv::Mat undistorted_grey_image;
   cv::cvtColor(undistorted_image, undistorted_grey_image, CV_BGR2GRAY);
 
-  // Go through all registerd ID tags (only 1 here, ID 0)
-  std::map<int,double>::iterator it;
-  for (it = idToSize_.begin(); it != idToSize_.end(); it++)
-  {
-    // std::vector<vpHomogeneousMatrix> cMo_vec;
-    std::vector<vpHomogeneousMatrix> cMo_vec;
-    tagDetector_.detect(undistorted_grey_image,tagSize, camera, cMo_vec);
-    int number_detections = tagDetector_.getNbObjects();
-    for (size_t i = 0; i < number_detections; i++) {
-      Detection detection; // maybe add arp:: etc.
-      detection.T_CT = kinematics::Transformation(cMo_vec[i]);
-      detection.points = tagDetector_.getPolygon(i);
-      detection.id = i;
-      detections.push_back(detection);
-      }
-  }
-  
-    // std::vector<vpImagePoint> p = detector.getPolygon(i);
-    // idToSize_[i]
 
-   /// \brief A simple struct containing all the necessary information about a
+  std::vector<AprilTags::TagDetection> rawdetections = tagDetector_.extractTags(undistorted_grey_image);
+
+  for (auto const& rawdetection: rawdetections)
+  {
+      int detected_ID = rawdetection.id;
+      if (idToSize_.find(detected_ID) == idToSize_.end())
+      {
+        // not found
+        break;
+      } else {
+        // found
+        float targetSize = idToSize_[detected_ID];
+         Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
+          Detection detection; // maybe add arp:: etc.
+          detection.T_CT = kinematics::Transformation(transform);
+          const std::pair<float, float> *pi = rawdetection.p;
+          // std::pair<float, float> p1 = rawdetection.p[1];
+          // std::pair<float, float> p2 = rawdetection.p[2];
+          // std::pair<float, float> p3 = rawdetection.p[3];
+          Eigen::Matrix<double, 2, 4> matrix;
+          matrix(0,0) = pi[0].first;
+          matrix(0,1) = pi[1].first;
+          matrix(0,2) = pi[2].first;
+          matrix(0,3) = pi[3].first;
+          matrix(1,0) = pi[0].second;
+          matrix(1,1) = pi[1].second;
+          matrix(1,2) = pi[2].second;
+          matrix(1,3) = pi[3].second;
+          detection.points = matrix;
+          detection.id = detected_ID;
+          detections.push_back(detection);
+         }
+  }
+  return detections.size();
+}
+
+ /// \brief A simple struct containing all the necessary information about a
   ///        tag detection.
   // struct Detection {
   //   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -88,10 +109,6 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   // };
   // typedef std::vector<Detection, Eigen::aligned_allocator<Detection>> DetectionVec;
 
-  return number_detections;
-  // throw std::runtime_error("not implemented");
-  // return 0; // TODO: number of detections...
-}
 
 bool Frontend::setTarget(unsigned int id, double targetSizeMeters) {
   idToSize_[id] = targetSizeMeters;
