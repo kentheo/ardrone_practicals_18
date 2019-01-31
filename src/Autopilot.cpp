@@ -123,6 +123,13 @@ float clamp(double lower, double value, double upper)
     return value;
 }
 
+bool Autopilot::publishTag(double id, double coordinate){
+  geometry_msgs::PoseStamped pose;
+  pose.header = ...;
+  pose.pose = ...;
+
+  pubPose_.publish(pose);
+}
 // Move the drone.
 bool Autopilot::move(double forward, double left , double up, double rotateLeft)
 {

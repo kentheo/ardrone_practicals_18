@@ -119,6 +119,8 @@ int main(int argc, char **argv)
   // ros::Rate rate(10);
 
   arp::Frontend frontend = new arp::Frontend();
+  frontend.setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
+  frontend.setTarget(0, tagSize);
 
   while (ros::ok()) {
 
@@ -138,10 +140,20 @@ int main(int argc, char **argv)
     if (subscriber.getLastImage(image)) {
 
       // Undistort image
-      pinCam.undistortImage(image, image);
+      pinCam.undistortImage(image, image2);
+
+      //Task4 week2
+      //print tags
+      std::vector<Detection, Eigen::aligned_allocator<Detection>> detections;
+      frontend.detect(&image, & detections);
+
+      for(arp::Detection det: detections){
+        //publish something
+        autopilot.publishTag(det.id, det.C_TC)
+      }
 
       // TODO: add overlays to the cv::Mat image, e.g. text
-      cv::putText(image,
+      cv::putText(image2,
       "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
       cvPoint(10,10),
       cv::FONT_HERSHEY_COMPLEX_SMALL, 0.4, cvScalar(0,0,0), 1, CV_AA);
