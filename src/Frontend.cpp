@@ -52,49 +52,53 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   const float cu = 320.00;
   const float cv = 149.25;
 
-  setTarget(0, tagSize); // to register 1 target, should be changed if we have more
-
   // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
-  setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
+  //next line is probably not needed as you set the parameters(using setCameraParameters) after calling the Frontend constructor
+  //setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
+  //same case as with the above line: we call it when we construct Frontend
+  //setTarget(0, tagSize); // to register 1 target, should be changed if we have more
+
+  //undistort the input image and transform to grayscale
   auto camera = undistortedCameraModel();
   cv::Mat undistorted_image;
   camera.undistortImage(image,undistorted_image);
   cv::Mat undistorted_grey_image;
   cv::cvtColor(undistorted_image, undistorted_grey_image, CV_BGR2GRAY);
 
-
+  //Extract AprilTags ie. get raw detactions using tagDetector_
   std::vector<AprilTags::TagDetection> rawdetections = tagDetector_.extractTags(undistorted_grey_image);
+
 
   for (auto const& rawdetection: rawdetections)
   {
       int detected_ID = rawdetection.id;
       if (idToSize_.find(detected_ID) == idToSize_.end())
       {
-        // not found
+        // id not found
         break;
       } else {
-        // found
+        // id found
         float targetSize = idToSize_[detected_ID];
-         Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
-          Detection detection; // maybe add arp:: etc.
-          detection.T_CT = kinematics::Transformation(transform);
-          const std::pair<float, float> *pi = rawdetection.p;
-          // std::pair<float, float> p1 = rawdetection.p[1];
-          // std::pair<float, float> p2 = rawdetection.p[2];
-          // std::pair<float, float> p3 = rawdetection.p[3];
-          Eigen::Matrix<double, 2, 4> matrix;
-          matrix(0,0) = pi[0].first;
-          matrix(0,1) = pi[1].first;
-          matrix(0,2) = pi[2].first;
-          matrix(0,3) = pi[3].first;
-          matrix(1,0) = pi[0].second;
-          matrix(1,1) = pi[1].second;
-          matrix(1,2) = pi[2].second;
-          matrix(1,3) = pi[3].second;
-          detection.points = matrix;
-          detection.id = detected_ID;
-          detections.push_back(detection);
-         }
+        Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
+        Detection detection; // maybe add arp:: etc.
+        detection.T_CT = kinematics::Transformation(transform);
+        const std::pair<float, float> *pi = rawdetection.p;
+        // std::pair<float, float> p1 = rawdetection.p[1];
+        // std::pair<float, float> p3 = rawdetection.p[3];
+        // std::pair<float, float> p2 = rawdetection.p[2];
+        Eigen::Matrix<double, 2, 4> matrix;
+        matrix(0,0) = pi[0].first;
+        matrix(0,1) = pi[1].first;
+        matrix(0,2) = pi[2].first;
+        matrix(0,3) = pi[3].first;
+        matrix(1,0) = pi[0].second;
+        matrix(1,1) = pi[1].second;
+        matrix(1,2) = pi[2].second;
+        matrix(1,3) = pi[3].second;
+        detection.points = matrix;
+        detection.id = detected_ID;
+        detections.push_back(detection);
+      }
   }
   return detections.size();
 }

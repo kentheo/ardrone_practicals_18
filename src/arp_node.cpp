@@ -118,6 +118,8 @@ int main(int argc, char **argv)
 
   // ros::Rate rate(10);
 
+  arp::Frontend frontend = new arp::Frontend();
+
   while (ros::ok()) {
 
     ros::spinOnce();

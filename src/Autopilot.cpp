@@ -21,6 +21,7 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   pubTakeoff_ = nh_->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
   pubLand_ = nh_->advertise<std_msgs::Empty>("/ardrone/land", 1);
   pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  pubPose_ = nh_->advertise<geometry_msgs::PoseStamped>("ardrone/camera_pose",1);
 
   // flattrim service
   srvFlattrim_ = nh_->serviceClient<std_srvs::Empty>(
@@ -118,7 +119,7 @@ float clamp(double lower, double value, double upper)
     return upper;
   else if (value < lower)
     return lower;
-  else 
+  else
     return value;
 }
 
