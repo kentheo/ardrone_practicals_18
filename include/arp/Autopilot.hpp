@@ -21,6 +21,10 @@
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
+#include <arp/Frontend.hpp>
 
 #include <string>
 
@@ -87,6 +91,8 @@ class Autopilot {
   /// \return True on success.
   /// \note This will only do something when in manual mode and flying.
   bool manualMove(double forward, double left, double up, double rotateLeft);
+
+  bool publishTag(Frontend::Detection det);
 
  protected:
   /// \brief Move the drone.

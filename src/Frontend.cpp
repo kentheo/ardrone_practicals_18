@@ -60,10 +60,12 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
 
   //undistort the input image and transform to grayscale
   auto camera = undistortedCameraModel();
-  cv::Mat undistorted_image;
-  camera.undistortImage(image,undistorted_image);
   cv::Mat undistorted_grey_image;
-  cv::cvtColor(undistorted_image, undistorted_grey_image, CV_BGR2GRAY);
+  cv::Mat distorted_grey_image;
+  cv::cvtColor(image, distorted_grey_image, CV_BGR2GRAY);
+  camera.undistortImage(distorted_grey_image,undistorted_grey_image);
+
+
 
   //Extract AprilTags ie. get raw detactions using tagDetector_
   std::vector<AprilTags::TagDetection> rawdetections = tagDetector_.extractTags(undistorted_grey_image);

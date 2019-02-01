@@ -123,10 +123,28 @@ float clamp(double lower, double value, double upper)
     return value;
 }
 
-bool Autopilot::publishTag(double id, double coordinate){
+bool Autopilot::publishTag(arp::Frontend::Detection det){
   geometry_msgs::PoseStamped pose;
-  pose.header = ...;
-  pose.pose = ...;
+
+  pose.header.frame_id = "target";
+
+  Eigen::Vector3d r =  det.T_CT.r();
+
+  geometry_msgs::Point point;
+  point.x = r[0];
+  point.y = r[1];
+  point.z = r[2];
+
+  Eigen::Quaterniond q =  det.T_CT.q();
+  geometry_msgs::Quaternion quat;
+
+  quat.x = q.x();
+  quat.y = q.y();
+  quat.z = q.z();
+  quat.w = q.w();
+
+  pose.pose.position = point;
+  pose.pose.orientation = quat;
 
   pubPose_.publish(pose);
 }
