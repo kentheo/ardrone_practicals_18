@@ -59,11 +59,10 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   //setTarget(0, tagSize); // to register 1 target, should be changed if we have more
 
   //undistort the input image and transform to grayscale
-  auto camera = undistortedCameraModel();
   cv::Mat undistorted_grey_image;
   cv::Mat distorted_grey_image;
   cv::cvtColor(image, distorted_grey_image, CV_BGR2GRAY);
-  camera.undistortImage(distorted_grey_image,undistorted_grey_image);
+  camera_->undistortImage(distorted_grey_image,undistorted_grey_image);
 
 
 
