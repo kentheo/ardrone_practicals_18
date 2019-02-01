@@ -127,6 +127,7 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   geometry_msgs::PoseStamped pose;
 
   pose.header.frame_id = "target";
+  pose.header.stamp = ros::Time::now();
 
   Eigen::Vector3d r =  det.T_CT.r();
 

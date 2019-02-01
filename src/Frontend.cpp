@@ -88,6 +88,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         // std::pair<float, float> p3 = rawdetection.p[3];
         // std::pair<float, float> p2 = rawdetection.p[2];
         Eigen::Matrix<double, 2, 4> matrix;
+        std::cout<< "Matrix: " << matrix;
         matrix(0,0) = pi[0].first;
         matrix(0,1) = pi[1].first;
         matrix(0,2) = pi[2].first;

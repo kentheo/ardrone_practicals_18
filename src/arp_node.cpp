@@ -103,13 +103,29 @@ int main(int argc, char **argv)
   double up = 0.0;
   double rotateLeft = 0.0;
 
-  float k1 = -0.541596;
-  float k2 = 0.307486;
-  float p1 = -0.000014;
-  float p2 = 0.001816;
+  // Retreive the values directly from the arp_rviz lauch file. Does not work yet
+  /*
+  float k1;
+  ros::NodeHandle::getParam("k1",k1);
+  float k2 = ros::NodeHandle::getParam("k2");
+  float p1 = ros::NodeHandle::getParam("p1");
+  float p2 = ros::NodeHandle::getParam("p2");
+  float fu = ros::NodeHandle::getParam("fu");
+  float fv = ros::NodeHandle::getParam("fv");
+  float cu = ros::NodeHandle::getParam("cu");
+  float cv = ros::NodeHandle::getParam("cv");
+  */
 
-  float tagSize = 16.75;
-
+  const float k1 = -0.541596;
+  const float k2 = 0.307486;
+  const float p1 = -0.000014;
+  const float p2 = 0.001816;
+  const float tagSize =16.75;
+  const float fu = 569.46;
+  const float fv = 572.26;
+  const float cu = 320.00;
+  const float cv = 149.25;
+  
   arp::cameras::RadialTangentialDistortion radDist(k1, k2, p1, p2);
 
   // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
@@ -152,9 +168,10 @@ int main(int argc, char **argv)
 
       for(arp::Frontend::Detection det: detections){
         //publish something
+        std::cout << "DETECTED";
         autopilot.publishTag(det);
       }
-
+      image = image2;
       // TODO: add overlays to the cv::Mat image, e.g. text
       cv::putText(image,
       "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
