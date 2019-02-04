@@ -21,7 +21,7 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   pubTakeoff_ = nh_->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
   pubLand_ = nh_->advertise<std_msgs::Empty>("/ardrone/land", 1);
   pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-  pubPose_ = nh_->advertise<geometry_msgs::PoseStamped>("ardrone/camera_pose",1);
+  pubPose_ = nh_->advertise<geometry_msgs::PoseStamped>("/ardrone/camera_pose",1);
 
   // flattrim service
   srvFlattrim_ = nh_->serviceClient<std_srvs::Empty>(
@@ -148,6 +148,8 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   pose.pose.orientation = quat;
 
   pubPose_.publish(pose);
+  std::cout << "pose published" << std::endl;
+  return true;
 }
 // Move the drone.
 bool Autopilot::move(double forward, double left , double up, double rotateLeft)
@@ -156,10 +158,6 @@ bool Autopilot::move(double forward, double left , double up, double rotateLeft)
     if (status == DroneStatus::Flying || status==DroneStatus::Flying2
         || status == DroneStatus::Hovering){
             geometry_msgs::Twist moveMsg;
-            // moveMsg.linear.x = clamp(-1., forward, 1.);
-            // moveMsg.linear.y = clamp(-1., left, 1.);
-            // moveMsg.linear.z = clamp(-1., up, 1.);
-            // moveMsg.angular.z = clamp(-1., rotateLeft, 1.);
             moveMsg.linear.x = forward;
             moveMsg.linear.y = left;
             moveMsg.linear.z = up;

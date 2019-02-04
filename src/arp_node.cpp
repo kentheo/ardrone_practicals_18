@@ -27,6 +27,8 @@
 // cd ~/ardrone_ws
 // catkin_make -DCMAKE_BUILD_TYPE=Release
 // roslaunch ardrone_practicals arp.launch
+// roslaunch ardrone_practicals arp_rviz.launch
+// 2>&1 | tee SomeFile.txt
 
 class Subscriber
 {
@@ -103,41 +105,47 @@ int main(int argc, char **argv)
   double up = 0.0;
   double rotateLeft = 0.0;
 
-  // Retreive the values directly from the arp_rviz lauch file. Does not work yet
-  /*
-  float k1;
-  ros::NodeHandle::getParam("k1",k1);
-  float k2 = ros::NodeHandle::getParam("k2");
-  float p1 = ros::NodeHandle::getParam("p1");
-  float p2 = ros::NodeHandle::getParam("p2");
-  float fu = ros::NodeHandle::getParam("fu");
-  float fv = ros::NodeHandle::getParam("fv");
-  float cu = ros::NodeHandle::getParam("cu");
-  float cv = ros::NodeHandle::getParam("cv");
-  */
+  // Retreive the values directly from the arp_rviz lauch file.
+  double k1; double k2; double p1; double p2;
+  double fu; double fv; double cu; double cv;
+  const double tagSize = 16.75;
+  const int imageWidth = 640;
+  const int imageHeight = 360;
 
-  const float k1 = -0.541596;
-  const float k2 = 0.307486;
-  const float p1 = -0.000014;
-  const float p2 = 0.001816;
-  const float tagSize =16.75;
-  const float fu = 569.46;
-  const float fv = 572.26;
-  const float cu = 320.00;
-  const float cv = 149.25;
-  
+  nh.getParam("/arp_node/k1", k1);
+  nh.getParam("/arp_node/k2", k2);
+  nh.getParam("/arp_node/p1", p1);
+  nh.getParam("/arp_node/p2", p2);
+  nh.getParam("/arp_node/fu", fu);
+  nh.getParam("/arp_node/fv", fv);
+  nh.getParam("/arp_node/cu", cu);
+  nh.getParam("/arp_node/cv", cv);
+
+  printf("Params received:\nk1: %f, k2: %f, p1: %f, p2: %f, fu: %f, fv: %f, cu: %f, cv: %f\n", 
+  k1,k2,p1,p2,fu,fv,cu,cv);
+
+  // const float k1 = -0.541596;
+  // const float k2 = 0.307486;
+  // const float p1 = -0.000014;
+  // const float p2 = 0.001816;
+  // const float tagSize =16.75;
+  // const float fu = 569.46;
+  // const float fv = 572.26;
+  // const float cu = 320.00;
+  // const float cv = 149.25;
+
   arp::cameras::RadialTangentialDistortion radDist(k1, k2, p1, p2);
 
   // imageWidth,imageHeight,focalLengthU,focalLengthV,imageCenterU,imageCenterV
   //TODO: find the correct parameters
-  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion> pinCam(640,360,569.46,572.26,320.00,149.25, radDist);
+  arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion> pinCam(imageWidth, imageHeight, fu, fv, cu, cv, radDist);
   //without this image is not rendered
   pinCam.initialiseUndistortMaps();
 
   // ros::Rate rate(10);
 
   arp::Frontend frontend;
-  frontend.setCameraParameters(640,360,569.46,572.26,320.00,149.25, k1,k2,p1,p2);
+  frontend.setCameraParameters(imageWidth,imageHeight,fu,fv,cu,cv,k1,k2,p1,p2);
   frontend.setTarget(0, tagSize);
 
   while (ros::ok()) {
@@ -321,11 +329,8 @@ int main(int argc, char **argv)
         std::cout << " [FAIL]" << std::endl;
     }
 
-
-
   }
 
-  // 2>&1 | tee SomeFile.txt
 
   // make sure to land the drone...
   bool success = autopilot.land();
