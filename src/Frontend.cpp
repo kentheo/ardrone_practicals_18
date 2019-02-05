@@ -68,7 +68,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         detection.T_CT = kinematics::Transformation(transform);
         const std::pair<float, float> *pi = rawdetection.p;
         Eigen::Matrix<double, 2, 4> matrix;
-        std::cout<< "Matrix: " << matrix;
+        
         matrix(0,0) = pi[0].first;
         matrix(0,1) = pi[1].first;
         matrix(0,2) = pi[2].first;
@@ -77,6 +77,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         matrix(1,1) = pi[1].second;
         matrix(1,2) = pi[2].second;
         matrix(1,3) = pi[3].second;
+        std::cout<< "Matrix: " << matrix;
         detection.points = matrix;
         detection.id = detected_ID;
         detections.push_back(detection);

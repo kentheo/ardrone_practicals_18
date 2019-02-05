@@ -26,6 +26,9 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   // flattrim service
   srvFlattrim_ = nh_->serviceClient<std_srvs::Empty>(
       nh_->resolveName("ardrone/flattrim"), 1);
+
+  pose_stamped_seq = 0;
+  
 }
 
 void Autopilot::navdataCallback(const ardrone_autonomy::NavdataConstPtr& msg)
@@ -124,19 +127,28 @@ float clamp(double lower, double value, double upper)
 }
 
 bool Autopilot::publishTag(arp::Frontend::Detection det){
-  geometry_msgs::PoseStamped pose;
+  geometry_msgs::PoseStamped pose_stamped;
+  std_msgs::Header header;
+  geometry_msgs::Pose pose;
+  
+  kinematics::Transformation T_TC = det.T_CT.inverse();
 
-  pose.header.frame_id = "target";
-  pose.header.stamp = ros::Time::now();
+  header.seq = pose_stamped_seq;
+  pose_stamped_seq = pose_stamped_seq + 1;
 
-  Eigen::Vector3d r =  det.T_CT.r();
+
+  header.frame_id = "target";
+  header.stamp = ros::Time::now(); // check this
+  pose_stamped.header = header;
+
+  Eigen::Vector3d r =  T_TC.r();
 
   geometry_msgs::Point point;
   point.x = r[0];
   point.y = r[1];
   point.z = r[2];
 
-  Eigen::Quaterniond q =  det.T_CT.q();
+  Eigen::Quaterniond q =  T_TC.q();
   geometry_msgs::Quaternion quat;
 
   quat.x = q.x();
@@ -144,10 +156,11 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   quat.z = q.z();
   quat.w = q.w();
 
-  pose.pose.position = point;
-  pose.pose.orientation = quat;
+  pose.position = point;
+  pose.orientation = quat;
+  pose_stamped.pose = pose;
 
-  pubPose_.publish(pose);
+  pubPose_.publish(pose_stamped);
   std::cout << "pose published" << std::endl;
   return true;
 }
