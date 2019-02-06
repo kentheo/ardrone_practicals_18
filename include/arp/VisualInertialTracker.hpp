@@ -40,15 +40,15 @@ class VisualInertialTracker
       void(uint64_t timestampMicroseconds, const kinematics::RobotState & state)> EstimatorCallback;
 
   /// \brief Set the frontend...
-  void setFrontend(std::shared_ptr<Frontend> frontend)
+  void setFrontend(Frontend& frontend)
   {
-    frontend_ = frontend;
+    frontend_ = &frontend;
   }
 
   /// \brief Set the estimator...
-  void setEstimator(std::shared_ptr<ViEkf> estimator)
+  void setEstimator(ViEkf& estimator)
   {
-    estimator_ = estimator;
+    estimator_ = &estimator;
   }
 
   /// \brief Set a visualisation callback.
@@ -77,8 +77,8 @@ class VisualInertialTracker
   void controllerLoop();
   void visualisationLoop();
 
-  std::shared_ptr<Frontend> frontend_; ///< The frontend that performs tag detections.
-  std::shared_ptr<ViEkf> estimator_; ///< The estimator.
+  Frontend* frontend_ = nullptr; ///< The frontend that performs tag detections.
+  ViEkf* estimator_ = nullptr; ///< The estimator.
 
   std::thread processingThread_; ///< Thread consuming asynchronously arriving measurements.
   std::thread controllerThread_; ///< Thread processing results to control something.
