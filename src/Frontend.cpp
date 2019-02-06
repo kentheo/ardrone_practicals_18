@@ -49,7 +49,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   double fv = camera_->focalLengthV();
   double cu = camera_->imageCenterU();
   double cv = camera_->imageCenterV();
-  
+
   //Extract AprilTags ie. get raw detactions using tagDetector_
   std::vector<AprilTags::TagDetection> rawdetections = tagDetector_.extractTags(undistorted_grey_image);
 
@@ -65,10 +65,13 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         float targetSize = idToSize_[detected_ID];
         Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
         Detection detection; // maybe add arp:: etc.
+        std::cout << "transform T_CT:" << transform;
         detection.T_CT = kinematics::Transformation(transform);
+        std::cout << "deection T_CT:" << kinematics::Transformation(transform).T();
+
         const std::pair<float, float> *pi = rawdetection.p;
         Eigen::Matrix<double, 2, 4> matrix;
-        
+
         matrix(0,0) = pi[0].first;
         matrix(0,1) = pi[1].first;
         matrix(0,2) = pi[2].first;

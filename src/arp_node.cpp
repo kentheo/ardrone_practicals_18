@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   // Retreive the values directly from the arp_rviz lauch file.
   double k1; double k2; double p1; double p2;
   double fu; double fv; double cu; double cv;
-  const double tagSize = 16.75;
+  const double tagSize = 0.1675;
   const int imageWidth = 640;
   const int imageHeight = 360;
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   nh.getParam("/arp_node/cu", cu);
   nh.getParam("/arp_node/cv", cv);
 
-  printf("Params received:\nk1: %f, k2: %f, p1: %f, p2: %f, fu: %f, fv: %f, cu: %f, cv: %f\n", 
+  printf("Params received:\nk1: %f, k2: %f, p1: %f, p2: %f, fu: %f, fv: %f, cu: %f, cv: %f\n",
   k1,k2,p1,p2,fu,fv,cu,cv);
 
   // const float k1 = -0.541596;
