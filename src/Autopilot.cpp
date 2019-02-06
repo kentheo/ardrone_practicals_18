@@ -28,7 +28,7 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
       nh_->resolveName("ardrone/flattrim"), 1);
 
   pose_stamped_seq = 0;
-  
+
 }
 
 void Autopilot::navdataCallback(const ardrone_autonomy::NavdataConstPtr& msg)
@@ -130,16 +130,43 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   geometry_msgs::PoseStamped pose_stamped;
   std_msgs::Header header;
   geometry_msgs::Pose pose;
-  
-  kinematics::Transformation T_TC = det.T_CT.inverse();
 
+  // ------------------------- Try with T_CT
+  geometry_msgs::PoseStamped pose_stamped2;
+  geometry_msgs::Pose pose2;
+  kinematics::Transformation T_CT = det.T_CT;
+  Eigen::Vector3d position = T_CT.r();
+  geometry_msgs::Point point2;
+  point2.x = position[0];
+  point2.y = position[1];
+  point2.z = position[2];
+
+  Eigen::Quaterniond rotation =  T_CT.q();
+  geometry_msgs::Quaternion quat2;
+
+  quat2.x = rotation.x();
+  quat2.y = rotation.y();
+  quat2.z = rotation.z();
+  quat2.w = rotation.w();
+
+  pose2.position = point2;
+  pose2.orientation = quat2;
+  pose_stamped.pose = pose;
+
+  // ------------------- End of try
+
+  kinematics::Transformation T_TC = det.T_CT.inverse();
   header.seq = pose_stamped_seq;
   pose_stamped_seq = pose_stamped_seq + 1;
 
 
   header.frame_id = "target";
-  header.stamp = ros::Time::now(); // check this
+
+  //header.stamp = ros::Time::now(); // check this
+  header.stamp.sec = (int) time(NULL);
   pose_stamped.header = header;
+
+  pose_stamped2.header = header;
 
   Eigen::Vector3d r =  T_TC.r();
 
@@ -161,6 +188,8 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   pose_stamped.pose = pose;
 
   pubPose_.publish(pose_stamped);
+  //pubPose_.publish(pose_stamped2);
+
   std::cout << "pose published" << std::endl;
   return true;
 }
