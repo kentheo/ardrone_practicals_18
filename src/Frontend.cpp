@@ -11,16 +11,23 @@
 
 namespace arp {
 
+Frontend::~Frontend() {
+  if(camera_ != nullptr) {
+    delete camera_;
+  }
+}
+
 void Frontend::setCameraParameters(int imageWidth, int imageHeight,
                                    double focalLengthU, double focalLengthV,
                                    double imageCenterU, double imageCenterV,
                                    double k1, double k2, double p1, double p2)
 {
-  camera_.reset(
-      new arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>(
+  if(camera_ != nullptr) {
+    delete camera_;
+  }
+  camera_ = new arp::cameras::PinholeCamera<arp::cameras::RadialTangentialDistortion>(
           imageWidth, imageHeight, focalLengthU, focalLengthV, imageCenterU,
-          imageCenterV,
-          arp::cameras::RadialTangentialDistortion(k1, k2, p1, p2)));
+          imageCenterV, arp::cameras::RadialTangentialDistortion(k1, k2, p1, p2));
   camera_->initialiseUndistortMaps();
 }
 

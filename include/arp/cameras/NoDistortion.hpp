@@ -67,10 +67,6 @@ class NoDistortion : public DistortionBase
   }
 
   /// \brief Unit test support -- create a test distortion object
-  static std::shared_ptr<DistortionBase> createTestObject() {
-    return std::shared_ptr<DistortionBase>(new NoDistortion());
-  }
-  /// \brief Unit test support -- create a test distortion object
   static NoDistortion testObject() {
     return NoDistortion();
   }
