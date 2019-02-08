@@ -145,9 +145,12 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   Eigen::Vector3d r =  T_TC.r();
 
   geometry_msgs::Point point;
-  point.x = r[2];
-  point.y = r[0];
-  point.z = r[1];
+  // point.x = r[2]; 
+  // point.y = r[0];
+  // point.z = r[1];
+  point.x = r[0]; 
+  point.y = r[1];
+  point.z = r[2];
 
   Eigen::Quaterniond q =  T_TC.q();
   geometry_msgs::Quaternion quat;
