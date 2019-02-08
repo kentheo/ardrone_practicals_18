@@ -203,11 +203,20 @@ bool ViEkf::predict(uint64_t from_timestampMicroseconds,
     // i.e. we do x_k = f(x_k_minus_1).
     // Also, we compute the matrix F (linearisation of f()) related to
     // delta_chi_k = F * delta_chi_k_minus_1.
-
+    kinematics::ImuKinematicsJacobian jacobian;
+    kinematics::Imu::stateTransition(x_, z_k_minus_1, z_k, x_, &jacobian);
+    Eigen::Matrix<double, 15,15> LQL;
+    Eigen::Matrix<double,3,3> identity3_3 = Eigen::Matrix<double,3,3>::Identity();
+    LQL.setZero();
+    LQL.block<3,3>(3,3) = pow(sigma_c_gyr_,2)*delta_t*identity3_3;
+    LQL.block<3,3>(6,6) = pow(sigma_c_acc_,2)*delta_t*identity3_3;
+    LQL.block<3,3>(9,9) = pow(sigma_c_gw_,2)*delta_t*identity3_3;
+    LQL.block<3,3>(12,12) = pow(sigma_c_aw_,2)*delta_t*identity3_3;
+    P_ = jacobian * P_ * jacobian.transpose() + LQL;
     // TODO: propagate covariance matrix P_
 
   }
-  return false;  // TODO: change to true once implemented
+  return true;  // TODO: change to true once implemented
 }
 
 // Pass a set of corner measurements to trigger an update.

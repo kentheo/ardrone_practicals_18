@@ -16,6 +16,7 @@
 #include <arp/cameras/CameraBase.hpp>
 #include <arp/cameras/PinholeCamera.hpp>
 #include <arp/cameras/NoDistortion.hpp>
+#include <cmath>
 
 namespace arp {
 
