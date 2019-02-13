@@ -165,7 +165,6 @@ template<class DISTORTION_T>
 CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
     const Eigen::Vector3d & point, Eigen::Vector2d * imagePoint) const
 {
-  // TODO: implement
   // Project to unit plane
   Eigen::Vector2d imagePoint2;
   imagePoint2(0) = (1 / point(2)) * point(0);
@@ -190,8 +189,34 @@ CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
     Eigen::Matrix<double, 2, 3> * pointJacobian) const
 {
   // TODO: implement in practical No. 3
-	throw std::runtime_error("not implemented");
-  return CameraBase::ProjectionStatus::Invalid;
+  CameraBase::ProjectionStatus sts = project( point,  imagePoint);
+
+    Eigen::Matrix<double, 2, 2> T1;
+    T1.setZero();
+    T1(0,0)= focalLengthU();
+    T1(1,1)= focalLengthV();
+
+    Eigen::Matrix<double, 2, 3> T3;
+    T3.setZero();
+    T3(0,0)= 1.0/point(0);
+    T3(0,2)= -point(0)/pow(point(2),2);
+    T3(1,1)= 1.0/point(2);
+    T3(1,2)= -point(1)/pow(point(2),2);
+
+    // get distotion jacobian
+    Eigen::Vector2d D;
+    Eigen::Vector2d imagePoint2;
+    imagePoint2(0) = (1 / point(2)) * point(0);
+    imagePoint2(1) = (1 / point(2)) * point(1);
+    // Distort
+    Eigen::Vector2d pointDistorted(2);
+    distortion_.distort(imagePoint2, &pointDistorted, &D);
+    std::cout << "Jacobian "<< D <<"should be identity matrix in our case";
+
+    //compute U - jacobian of the world2camera function project()
+    pointJacobian =  T1 * D * T3;
+
+  return sts;
 }
 
 /////////////////////////////////////////

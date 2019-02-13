@@ -213,8 +213,6 @@ bool ViEkf::predict(uint64_t from_timestampMicroseconds,
     LQL.block<3,3>(9,9) = pow(sigma_c_gw_,2)*delta_t*identity3_3;
     LQL.block<3,3>(12,12) = pow(sigma_c_aw_,2)*delta_t*identity3_3;
     P_ = jacobian * P_ * jacobian.transpose() + LQL;
-    // TODO: propagate covariance matrix P_
-
   }
   return true;  // TODO: change to true once implemented
 }
@@ -323,20 +321,34 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   // (remember the camera projection will assume the point is represented
   // in camera coordinates):
 
+  Eigen::Vector3d hp_C = T_SC_.inverse() * T_WS.inverse() * hp_W;
   // TODO: calculate the reprojection error y (residual)
   // using the PinholeCamera::project
-  const Eigen::Vector2d y;  // = TODO
+
+  // Jacobian of world2camera function "project"
+  Eigen::Matrix<double, 2, 3> U;
+  Eigen::Vector2d h_C;
+  cameraModel_.project(hp_C.head<3>(), &h_C , &U );
+  const Eigen::Vector2d y = z_k - h_C;
 
   // TODO: check validity of projection -- return false if not successful!
-
+  //this function should be implemented but I am not sure where
+  //might be the if a few lines down, bu tnot sure why the TODO
   // TODO: calculate measurement Jacobian H
+  Eigen::Matrix<double, 2, 15> H;
+  H.setZero();
+  Eigen::Matrix<double, 2, 3> p_wr_pos_deriv = -T_WS.C().inverse();
+  Eigen::Matrix<double, 2, 3> p_wr_rot_deriv = T_WS.C().inverse() *
+                            arp::kinematics::crossMx(hp_W.head<3>()-T_WS.r());
+  H.block<0,0>(3,3) = U * T_SC_.C().inverse() * p_wr_pos_deriv;
+  H.block<0,3>(3,3) = U * T_SC_.C().inverse() * p_wr_rot_deriv;
 
   // Obtain the measurement covariance form parameters:
   const double r = sigma_imagePoint_ * sigma_imagePoint_;
   Eigen::Matrix2d R = Eigen::Vector2d(r, r).asDiagonal();  // the measurement covariance
 
   // TODO: compute residual covariance S
-  Eigen::Matrix2d S;  // = TODO
+  Eigen::Matrix2d S = H * P_ * H.transpose() + R;
 
   // chi2 test -- See Lecture 4, Slide 21
   if (y.transpose() * S.inverse() * y > 40.0) {
@@ -346,14 +358,21 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   }
 
   // TODO: compute Kalman gain K
+  Eigen::Matrix<double, 15 , 2> K = P_ * H.transpose() * S.inverse();
 
   // TODO: compute increment Delta_chi
+  Eigen::Matrix<double, 15, 1> delta_chi = K *y;
 
   // TODO: perform update. Note: multiplicative for the quaternion!!
+  x_.r_W = x_.r_W + delta_chi.segment<3>(0);
+  x_.q_WS = (arp::kinematics::deltaQ(delta_chi.segment<3>(3)) * x_.q_WS).normalized();
+  x_.v_W = x_.v_W + delta_chi.segment<3>(6);
+  x_.b_g = x_.b_g + delta_chi.segment<3>(9);
+  x_.b_a = x_.b_a + delta_chi.segment<3>(12);
 
   // TODO: update to covariance matrix:
-
-  return false;  // TODO: change to true once implemented...
+  P_ =(  MatrixXf::Identity(15,15)- (K * H)) * P_;
+  return true;  // TODO: change to true once implemented...
 }
 
 }  // namespace arp
