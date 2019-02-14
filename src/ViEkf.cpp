@@ -329,7 +329,7 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   Eigen::Matrix<double, 2, 3> U;
   Eigen::Vector2d h_C;
   cameraModel_.project(hp_C.head<3>(), &h_C , &U );
-  const Eigen::Vector2d y = z_k - h_C;
+  const Eigen::Vector2d y = z_k - h_C;  // z_k = stateTransition[2]
 
   // TODO: check validity of projection -- return false if not successful!
   //this function should be implemented but I am not sure where
@@ -371,7 +371,7 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   x_.b_a = x_.b_a + delta_chi.segment<3>(12);
 
   // TODO: update to covariance matrix:
-  P_ =(  MatrixXf::Identity(15,15)- (K * H)) * P_;
+  P_ = (Eigen::Matrix<double, 15, 15>::Identity(15,15)- (K * H)) * P_;
   return true;  // TODO: change to true once implemented...
 }
 
