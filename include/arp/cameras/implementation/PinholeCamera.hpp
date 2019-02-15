@@ -211,7 +211,6 @@ CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
     // Distort
     Eigen::Vector2d pointDistorted(2);
     distortion_.distort(imagePoint2, &pointDistorted, &D);
-    std::cout << "Jacobian "<< D <<"should be identity matrix in our case";
 
     //compute U - jacobian of the world2camera function project()
     *pointJacobian =  T1 * D * T3;
