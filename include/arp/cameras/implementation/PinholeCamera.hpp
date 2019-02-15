@@ -198,7 +198,7 @@ CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
 
     Eigen::Matrix<double, 2, 3> T3;
     T3.setZero();
-    T3(0,0)= 1.0/point(0);
+    T3(0,0)= 1.0/point(2);
     T3(0,2)= -point(0)/pow(point(2),2);
     T3(1,1)= 1.0/point(2);
     T3(1,2)= -point(1)/pow(point(2),2);
