@@ -21,6 +21,10 @@
 #include <arp/cameras/PinholeCamera.hpp>
 #include <arp/cameras/CameraBase.hpp>
 #include <arp/cameras/DistortionBase.hpp>
+#include <arp/VisualInertialTracker.hpp>
+#include <arp/ViEkf.hpp>
+
+
 
 
 // notes:
@@ -147,6 +151,24 @@ int main(int argc, char **argv)
   arp::Frontend frontend;
   frontend.setCameraParameters(imageWidth,imageHeight,fu,fv,cu,cv,k1,k2,p1,p2);
   frontend.setTarget(0, tagSize);
+
+  arp::VisualInertialTracker visualTracker;
+  arp::ViEkf viefk;
+  Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
+  arp::kinematics::Transformation transform(trs);
+  viefk.setTarget(0,transform,tagSize);
+
+  visualTracker.setFrontend(frontend);
+  visualTracker.setEstimator(viefk);
+
+  Eigen::Matrix4d T_SC_mat;
+  T_SC_mat << -0.00195087, -0.03257782, 0.99946730, 0.17409445,
+  -0.99962338, -0.02729525, -0.00284087, 0.02255834,
+  0.02737326, -0.99909642, -0.03251230, 0.00174723,
+  0.00000000, 0.00000000, 0.00000000, 1.00000000;
+  arp::kinematics::Transformation T_SC(T_SC_mat);
+
+  viefk.setCameraExtrinsics(T_SC);
 
   while (ros::ok()) {
 

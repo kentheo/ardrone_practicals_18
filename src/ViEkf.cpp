@@ -330,8 +330,6 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   Eigen::Matrix<double, 2, 3> U;
   Eigen::Vector2d h_C;
   cameraModel_.project(hp_C.head<3>(), &h_C , &U );
-  std::cout << "image point" << imagePointMeasurements.col(p);
-  std::cout << "prediction" << h_C;
   const Eigen::Vector2d y = imagePointMeasurements.col(p) - h_C;
 
   // TODO: check validity of projection -- return false if not successful!

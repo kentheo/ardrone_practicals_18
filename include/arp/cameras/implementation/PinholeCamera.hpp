@@ -176,7 +176,7 @@ CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
   Eigen::Vector2d pointDistorted2 = *imagePoint;
   pointDistorted2(0) = pointDistorted(0)*fu_ + cu_;
   pointDistorted2(1) = pointDistorted(1)*fv_ + cv_;
-  std::cout << "IMAGE POINT: " << * imagePoint << imagePoint << std::endl;
+  //std::cout << "IMAGE POINT: " << * imagePoint << imagePoint << std::endl;
   *imagePoint = pointDistorted2;
 	// throw std::runtime_error("not implemented");
   return CameraBase::ProjectionStatus::Successful;
