@@ -321,15 +321,16 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   // (remember the camera projection will assume the point is represented
   // in camera coordinates):
 
-  Eigen::Vector3d hp_C = T_SC_.inverse() * T_WS.inverse() * hp_W;
+  Eigen::Vector3d hp_C = (T_SC_.inverse() * T_WS.inverse() * hp_W).head<3>();
   // TODO: calculate the reprojection error y (residual)
   // using the PinholeCamera::project
 
-  // Jacobian of world2camera function "project"
+  // Jacobian of world2camera function "project
+
   Eigen::Matrix<double, 2, 3> U;
   Eigen::Vector2d h_C;
   cameraModel_.project(hp_C.head<3>(), &h_C , &U );
-  const Eigen::Vector2d y = z_k - h_C;  // z_k = stateTransition[2]
+  const Eigen::Vector2d y = imagePointMeasurements.col(p) - h_C;
 
   // TODO: check validity of projection -- return false if not successful!
   //this function should be implemented but I am not sure where
@@ -337,11 +338,11 @@ bool ViEkf::update(uint64_t timestampMicroseconds,
   // TODO: calculate measurement Jacobian H
   Eigen::Matrix<double, 2, 15> H;
   H.setZero();
-  Eigen::Matrix<double, 2, 3> p_wr_pos_deriv = -T_WS.C().inverse();
-  Eigen::Matrix<double, 2, 3> p_wr_rot_deriv = T_WS.C().inverse() *
+  Eigen::Matrix<double, 3, 3> p_wr_pos_deriv = -T_WS.C().inverse();
+  Eigen::Matrix<double, 3, 3> p_wr_rot_deriv = T_WS.C().inverse() *
                             arp::kinematics::crossMx(hp_W.head<3>()-T_WS.r());
-  H.block<0,0>(3,3) = U * T_SC_.C().inverse() * p_wr_pos_deriv;
-  H.block<0,3>(3,3) = U * T_SC_.C().inverse() * p_wr_rot_deriv;
+  H.block<2,3>(0,0) = U * T_SC_.C().inverse() * p_wr_pos_deriv;
+  H.block<2,3>(0,3) = U * T_SC_.C().inverse() * p_wr_rot_deriv;
 
   // Obtain the measurement covariance form parameters:
   const double r = sigma_imagePoint_ * sigma_imagePoint_;
