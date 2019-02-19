@@ -336,11 +336,11 @@ TEST(ViEkfTest, updateState) {
   newState2.b_g <<  3.82441,  0.499508,  2.02315;
   newState2.b_a << -1.28833,  1.77946,  0.307319;
 
-  EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<1.0e-4);
-  EXPECT_TRUE((newState.q_WS.coeffs()-newState2.q_WS.coeffs()).norm()<1.0e-4);
-  EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<1.0e-4);
-  EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<1.0e-4);
-  EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<1.0e-4);
+  EXPECT_TRUE((newState.r_W-newState2.r_W).norm()<2.0e-5);
+  EXPECT_TRUE((newState.q_WS.coeffs()-newState2.q_WS.coeffs()).norm()<2.0e-5);
+  EXPECT_TRUE((newState.v_W-newState2.v_W).norm()<2.0e-5);
+  EXPECT_TRUE((newState.b_g-newState2.b_g).norm()<2.0e-5);
+  EXPECT_TRUE((newState.b_a-newState2.b_a).norm()<2.0e-5);
 }
 
 } // namespace
