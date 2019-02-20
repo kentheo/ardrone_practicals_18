@@ -52,6 +52,7 @@ public:
 
     //publish stamped transform
     pubPose_.publish(poseMsg);
+
   }
 protected:
   ros::NodeHandle * nh_;  ///< ROS node handle.
@@ -61,4 +62,3 @@ protected:
 }
 
 #endif /* ARDRONE_PRACTICALS_INCLUDE_ARP_STATEPUBLISHER_HPP_ */
-

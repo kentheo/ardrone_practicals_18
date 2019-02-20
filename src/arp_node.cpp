@@ -46,6 +46,8 @@ class Subscriber
     // -- for later use
     std::lock_guard<std::mutex> l(imageMutex_);
     lastImage_ = cv_bridge::toCvShare(msg, "bgr8")->image;
+
+    visualTrackerPtr->addImage(timeMicroseconds, lastImage_);
   }
 
   bool getLastImage(cv::Mat& image)
@@ -60,12 +62,25 @@ class Subscriber
 
   void imuCallback(const sensor_msgs::ImuConstPtr& msg)
   {
-    // -- for later use
+    uint64_t timeMicroseconds = uint64_t(msg->header.stamp.sec) * 1000000ll
+        + msg->header.stamp.nsec / 1000;
+
+    Eigen::Vector3d omega_S;
+    omega_S[0] = msg-> angular_velocity.x;
+    omega_S[1] = msg-> angular_velocity.y;
+    omega_S[2] = msg-> angular_velocity.z;
+    Eigen::Vector3d acc_S;
+    acc_S[0] = msg-> linear_acceleration.x;
+    acc_S[1] = msg-> linear_acceleration.y;
+    acc_S[2] = msg-> linear_acceleration.z;
+
+    visualTrackerPtr->addImuMeasurement(timeMicroseconds, omega_S, acc_S);
   }
 
  private:
   cv::Mat lastImage_;
   std::mutex imageMutex_;
+  arp::VisualInertialTracker *visualTrackerPtr;
 };
 
 int main(int argc, char **argv)
@@ -152,23 +167,41 @@ int main(int argc, char **argv)
   frontend.setCameraParameters(imageWidth,imageHeight,fu,fv,cu,cv,k1,k2,p1,p2);
   frontend.setTarget(0, tagSize);
 
+  //Visual Inertial Tracker Integration
   arp::VisualInertialTracker visualTracker;
   arp::ViEkf viefk;
-  Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
-  arp::kinematics::Transformation transform(trs);
-  viefk.setTarget(0,transform,tagSize);
 
+  //pass the Frontend as well as a ViEkf to the vis-inert tracker
   visualTracker.setFrontend(frontend);
   visualTracker.setEstimator(viefk);
 
+  // register the AprilTag
+  Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
+  trs << 1, 0, 0 ,0,
+         0, 0, -1, 0,
+         0, 1, 0, 0,
+         0, 0, 0, 1;
+
+  arp::kinematics::Transformation transform(trs);
+  viefk.setTarget(0,transform,tagSize);
+
+  //set camera Extrinsics
   Eigen::Matrix4d T_SC_mat;
   T_SC_mat << -0.00195087, -0.03257782, 0.99946730, 0.17409445,
   -0.99962338, -0.02729525, -0.00284087, 0.02255834,
   0.02737326, -0.99909642, -0.03251230, 0.00174723,
   0.00000000, 0.00000000, 0.00000000, 1.00000000;
   arp::kinematics::Transformation T_SC(T_SC_mat);
-
   viefk.setCameraExtrinsics(T_SC);
+
+  //get undistorded camera model from frontend
+  //and use it together with the estiator
+  arp::cameras::PinholeCamera<arp::cameras::NoDistortion> undistCam =
+      frontend.undistortedCameraModel();
+  viefk.setCameraIntrinsics(undistCam); //sets the camera parameters, eg. model, properties
+
+  visualTracker->setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
+    &publisher,std::placeholders::_1, std::placeholders::_2));
 
   while (ros::ok()) {
 
@@ -193,15 +226,16 @@ int main(int argc, char **argv)
 
       //Task4 week2
       //print tags
-      std::vector<arp::Frontend::Detection, Eigen::aligned_allocator<arp::Frontend::Detection>> detections;
-      frontend.detect(image, detections);
+      //std::vector<arp::Frontend::Detection, Eigen::aligned_allocator<arp::Frontend::Detection>> detections;
+      //frontend.detect(image, detections);
 
-      for(arp::Frontend::Detection det: detections){
+      //for(arp::Frontend::Detection det: detections){
         //publish something
-        std::cout << "DETECTED";
-        autopilot.publishTag(det);
-      }
-      image = image2;
+      //  std::cout << "DETECTED";
+      //  autopilot.publishTag(det);
+      //}
+      //image = image2;
+      
       // TODO: add overlays to the cv::Mat image, e.g. text
       cv::putText(image,
       "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
