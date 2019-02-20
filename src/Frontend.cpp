@@ -60,7 +60,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
       if (idToSize_.find(detected_ID) == idToSize_.end())
       {
         // id not found
-        break;
+        continue;
       } else {
         float targetSize = idToSize_[detected_ID];
         Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
