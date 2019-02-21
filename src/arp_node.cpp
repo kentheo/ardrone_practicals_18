@@ -39,6 +39,7 @@ class Subscriber
 {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  arp::VisualInertialTracker *visualTrackerPtr;
 
   void imageCallback(const sensor_msgs::ImageConstPtr& msg)
   {
@@ -81,7 +82,6 @@ class Subscriber
  private:
   cv::Mat lastImage_;
   std::mutex imageMutex_;
-  arp::VisualInertialTracker *visualTrackerPtr;
 };
 
 int main(int argc, char **argv)
@@ -90,15 +90,11 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  // setup inputs
-  Subscriber subscriber;
-  image_transport::Subscriber subImage = it.subscribe(
-      "ardrone/front/image_raw", 2, &Subscriber::imageCallback, &subscriber);
-  ros::Subscriber subImu = nh.subscribe("ardrone/imu", 50,
-                                        &Subscriber::imuCallback, &subscriber);
-
   // set up autopilot
   arp::Autopilot autopilot(nh);
+
+  // setup inputs
+  Subscriber subscriber;
 
   // Set up State publisher
   arp::StatePublisher posePublisher(nh);
@@ -172,12 +168,13 @@ int main(int argc, char **argv)
   frontend.setTarget(0, tagSize);
 
   //Visual Inertial Tracker Integration
-  arp::VisualInertialTracker visualTracker;
+  arp::VisualInertialTracker visualTracker; //= arp::VisualInertialTracker();
   arp::ViEkf viefk;
 
   //pass the Frontend as well as a ViEkf to the vis-inert tracker
   visualTracker.setFrontend(frontend);
   visualTracker.setEstimator(viefk);
+  subscriber.visualTrackerPtr = &visualTracker;
 
   // register the AprilTag
   Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
@@ -206,7 +203,12 @@ int main(int argc, char **argv)
 
   visualTracker.setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
     &posePublisher, std::placeholders::_1, std::placeholders::_2));
-    
+
+  image_transport::Subscriber subImage = it.subscribe(
+      "ardrone/front/image_raw", 2, &Subscriber::imageCallback, &subscriber);
+  ros::Subscriber subImu = nh.subscribe("ardrone/imu", 50,
+                                        &Subscriber::imuCallback, &subscriber);
+
   while (ros::ok()) {
 
     ros::spinOnce();
@@ -226,7 +228,7 @@ int main(int argc, char **argv)
     if (subscriber.getLastImage(image)) {
 
       // Undistort image
-      pinCam.undistortImage(image, image2);
+      pinCam.undistortImage(image, image);
 
 
 
