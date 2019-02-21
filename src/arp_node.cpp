@@ -23,6 +23,7 @@
 #include <arp/cameras/DistortionBase.hpp>
 #include <arp/VisualInertialTracker.hpp>
 #include <arp/ViEkf.hpp>
+#include <arp/StatePublisher.hpp>
 
 
 
@@ -98,6 +99,9 @@ int main(int argc, char **argv)
 
   // set up autopilot
   arp::Autopilot autopilot(nh);
+
+  // Set up State publisher
+  arp::StatePublisher posePublisher(nh);
 
   // setup rendering
   SDL_Event event;
@@ -200,9 +204,9 @@ int main(int argc, char **argv)
       frontend.undistortedCameraModel();
   viefk.setCameraIntrinsics(undistCam); //sets the camera parameters, eg. model, properties
 
-  visualTracker->setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
-    &publisher,std::placeholders::_1, std::placeholders::_2));
-
+  visualTracker.setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
+    &posePublisher, std::placeholders::_1, std::placeholders::_2));
+    
   while (ros::ok()) {
 
     ros::spinOnce();
@@ -224,6 +228,8 @@ int main(int argc, char **argv)
       // Undistort image
       pinCam.undistortImage(image, image2);
 
+
+
       //Task4 week2
       //print tags
       //std::vector<arp::Frontend::Detection, Eigen::aligned_allocator<arp::Frontend::Detection>> detections;
@@ -231,11 +237,11 @@ int main(int argc, char **argv)
 
       //for(arp::Frontend::Detection det: detections){
         //publish something
-      //  std::cout << "DETECTED";
+      // std::cout << "DETECTED";
       //  autopilot.publishTag(det);
       //}
       //image = image2;
-      
+
       // TODO: add overlays to the cv::Mat image, e.g. text
       cv::putText(image,
       "takoff/land: T/L, stop: ESC, forward/backward: UP/DOWN, left/right: LEFT/RIGHT, up/down: W/S, yaw left/right: A/D.",
