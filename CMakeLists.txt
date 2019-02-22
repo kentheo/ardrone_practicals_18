@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  interactive_markers
   apriltags
 )
 
@@ -136,6 +137,7 @@ add_library(${PROJECT_NAME}
    src/CameraBase.cpp
    src/Imu.cpp
    src/ViEkf.cpp
+   src/PidController.cpp
 )
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}

@@ -76,7 +76,7 @@ void VisualInertialTracker::processingLoop()
         if (estimator_->getState(t, x)) {
           if(controllerCallback_) {
             StateEstimate estimate;
-            estimate.timestampMicroseconds = cameraMeasurement.timestampMicroseconds;
+            estimate.timestampMicroseconds = t;
             estimate.state = x;
             controllerQueue_.PushNonBlocking(estimate);
           }
