@@ -24,6 +24,7 @@
 #include <arp/VisualInertialTracker.hpp>
 #include <arp/ViEkf.hpp>
 #include <arp/StatePublisher.hpp>
+#include <arp/InteractiveMarkerServer.hpp>
 
 
 
@@ -162,6 +163,12 @@ int main(int argc, char **argv)
   pinCam.initialiseUndistortMaps();
 
   // ros::Rate rate(10);
+
+  // CW 4 InteractiveMarkerServer
+  arp::InteractiveMarkerServer marker_server(autopilot);
+  double x, y, z, yaw;
+  autopilot.getPoseReference(x, y, z, yaw);
+  marker_server.activate(x, y, z, yaw);
 
   arp::Frontend frontend;
   frontend.setCameraParameters(imageWidth,imageHeight,fu,fv,cu,cv,k1,k2,p1,p2);
