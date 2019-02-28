@@ -13,7 +13,7 @@ namespace arp {
 Autopilot::Autopilot(ros::NodeHandle& nh)
     : nh_(&nh)
 {
-  isAutomatic_ = false; // always start in manual mode  
+  isAutomatic_ = false; // always start in manual mode
 
   // receive navdata
   subNavdata_ = nh.subscribe("ardrone/navdata", 50, &Autopilot::navdataCallback,
@@ -31,7 +31,15 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
       nh_->resolveName("ardrone/flattrim"), 1);
 
   pose_stamped_seq = 0;
+  PidController::Parameters PitchDefaultParams = { .k_p = 0.1, .k_i =0., .k_d = 0.};
+  PidController::Parameters RollfaultParams = { .k_p = 0.1, .k_i =0., .k_d = 0.};
+  PidController::Parameters VspeedDefaultParams = { .k_p = 1., .k_i =0., .k_d = 0.};
+  PidController::Parameters YawDefaultParams = { .k_p = 1., .k_i =0., .k_d = 0.};
 
+  PitchPID.setParameters(PitchDefaultParams);
+  RollPID.setParameters(RollDefaultParams);
+  VspeedPID.setParameters(VspeedDefaultParams);
+  YawPID.setParameters(YawDefaultParams);
 }
 
 void Autopilot::navdataCallback(const ardrone_autonomy::NavdataConstPtr& msg)
@@ -148,10 +156,10 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   Eigen::Vector3d r =  T_TC.r();
 
   geometry_msgs::Point point;
-  // point.x = r[2]; 
+  // point.x = r[2];
   // point.y = r[0];
   // point.z = r[1];
-  point.x = r[0]; 
+  point.x = r[0];
   point.y = r[1];
   point.z = r[2];
 

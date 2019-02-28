@@ -26,6 +26,7 @@
 #include <geometry_msgs/Quaternion.h>
 #include <arp/Frontend.hpp>
 #include <time.h>
+#include <arp/PidController.hpp>
 
 #include <string>
 
@@ -144,6 +145,10 @@ class Autopilot {
   ardrone_autonomy::Navdata lastNavdata_; ///< Store navdata as it comes in asynchronously.
   std::mutex navdataMutex_; ///< We need to lock navdata access due to asynchronous arrival.
   ros::Subscriber subNavdata_; ///< The subscriber for navdata.
+  PidController PitchPID;
+  PidController RollPID;
+  PidController VspeedPID;
+  PidController YawPID;
 
   private:
   uint32_t pose_stamped_seq;
