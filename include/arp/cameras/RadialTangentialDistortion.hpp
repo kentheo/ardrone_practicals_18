@@ -64,12 +64,6 @@ class RadialTangentialDistortion : public DistortionBase
   inline RadialTangentialDistortion(double k1, double k2, double p1, double p2);
 
   /// \brief Unit test support -- create a test distortion object
-  static std::shared_ptr<DistortionBase> createTestObject()
-  {
-    return std::shared_ptr<DistortionBase>(
-        new RadialTangentialDistortion(-0.16, 0.15, 0.0003, 0.0002));
-  }
-  /// \brief Unit test support -- create a test distortion object
   static RadialTangentialDistortion testObject()
   {
     return RadialTangentialDistortion(-0.16, 0.15, 0.0003, 0.0002);
