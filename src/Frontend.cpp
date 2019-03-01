@@ -45,10 +45,10 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
   cv::Mat distorted_grey_image;
   cv::cvtColor(image, distorted_grey_image, CV_BGR2GRAY);
   camera_->undistortImage(distorted_grey_image,undistorted_grey_image);
-  double fu = camera_->focalLengthU();
-  double fv = camera_->focalLengthV();
-  double cu = camera_->imageCenterU();
-  double cv = camera_->imageCenterV();
+  double fu = camera_->undistortedPinholeCamera().focalLengthU();
+  double fv = camera_->undistortedPinholeCamera().focalLengthV();
+  double cu = camera_->undistortedPinholeCamera().imageCenterU();
+  double cv = camera_->undistortedPinholeCamera().imageCenterV();
 
   //Extract AprilTags ie. get raw detactions using tagDetector_
   std::vector<AprilTags::TagDetection> rawdetections = tagDetector_.extractTags(undistorted_grey_image);
