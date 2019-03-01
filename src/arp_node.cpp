@@ -350,55 +350,76 @@ int main(int argc, char **argv)
       }
     }
 
-    if (state[SDL_SCANCODE_UP]) {
-      std::cout << "Forward..." << std::endl;
-      forward = vel_forward;
-    }
-    if (state[SDL_SCANCODE_DOWN]) {
-      std::cout << "Backward..." << std::endl;
-      forward = -vel_forward;
-    }
-    if (state[SDL_SCANCODE_LEFT]) {
-      std::cout << "Left..." << std::endl;
-      left = vel_left;
-    }
-    if (state[SDL_SCANCODE_RIGHT]) {
-      std::cout << "Right..." << std::endl;
-      left = -vel_left;
-    }
-    if (state[SDL_SCANCODE_W]) {
-      std::cout << "Up..." << std::endl;
-      up = vel_up;
-    }
-    if (state[SDL_SCANCODE_S]) {
-      std::cout << "Down..." << std::endl;
-      up = -vel_up;
-    }
-    if (state[SDL_SCANCODE_A]) {
-      std::cout << "Yaw left..." << std::endl;
-      rotateLeft = vel_rotateLeft;
-    }
-    if (state[SDL_SCANCODE_D]) {
-      std::cout << "Yaw right..." << std::endl;
-      rotateLeft = -vel_rotateLeft;
+    // NEW CW5 : automatic fligh
+    //  right Ctrl (SDL_SCANCODE_RCTRL) key to enable automatic control
+    if (state[SDL_SCANCODE_RCTRL]) {
+      std::cout << "Going to automatic control..." << std::endl;
+      autopilot.setAutomatic();
     }
 
-    // TODO: process moving commands when in state 3,4, or 7
-
-    // send commands:
-    std::cout << "Sending "
-              << " Forward: " << forward
-              << " Left: " << left
-              << " Up: " << up
-              << " RotateLeft: " << rotateLeft;
-    //send the move command to drone
-    bool success = autopilot.manualMove(forward,left,up,rotateLeft);
-
-    if (success) {
-        std::cout << " [ OK ]" << std::endl;
-    } else {
-        std::cout << " [FAIL]" << std::endl;
+    // spacebar (SDL_SCANCODE_SPACE) to go back to manual
+    if (state[SDL_SCANCODE_SPACE]) {
+      std::cout << "Going back to manual mode ..." << std::endl;
+      autopilot.setManual();
     }
+
+    // Check if we are in manual mode before accepting control commands
+    if (!autopilot.isAutomatic())
+    {
+      if (state[SDL_SCANCODE_UP]) {
+        std::cout << "Forward..." << std::endl;
+        forward = vel_forward;
+      }
+      if (state[SDL_SCANCODE_DOWN]) {
+        std::cout << "Backward..." << std::endl;
+        forward = -vel_forward;
+      }
+      if (state[SDL_SCANCODE_LEFT]) {
+        std::cout << "Left..." << std::endl;
+        left = vel_left;
+      }
+      if (state[SDL_SCANCODE_RIGHT]) {
+        std::cout << "Right..." << std::endl;
+        left = -vel_left;
+      }
+      if (state[SDL_SCANCODE_W]) {
+        std::cout << "Up..." << std::endl;
+        up = vel_up;
+      }
+      if (state[SDL_SCANCODE_S]) {
+        std::cout << "Down..." << std::endl;
+        up = -vel_up;
+      }
+      if (state[SDL_SCANCODE_A]) {
+        std::cout << "Yaw left..." << std::endl;
+        rotateLeft = vel_rotateLeft;
+      }
+      if (state[SDL_SCANCODE_D]) {
+        std::cout << "Yaw right..." << std::endl;
+        rotateLeft = -vel_rotateLeft;
+      }
+
+      // TODO: process moving commands when in state 3,4, or 7
+
+      // send commands:
+      std::cout << "Sending "
+                << " Forward: " << forward
+                << " Left: " << left
+                << " Up: " << up
+                << " RotateLeft: " << rotateLeft;
+      //send the move command to drone
+      bool success = autopilot.manualMove(forward,left,up,rotateLeft);
+
+      if (success) {
+          std::cout << " [ OK ]" << std::endl;
+      } else {
+          std::cout << " [FAIL]" << std::endl;
+      }
+
+    }
+
+
+
 
   }
 

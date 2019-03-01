@@ -33,14 +33,14 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
 
   pose_stamped_seq = 0;
   PidController::Parameters PitchDefaultParams;
-  PitchDefaultParams.k_p = 0.3;
+  PitchDefaultParams.k_p = 0.05;
   PitchDefaultParams.k_i = 0.0;
-  PitchDefaultParams.k_d = 0.0;
+  PitchDefaultParams.k_d = 0.05;
 
   PidController::Parameters RollDefaultParams;
-  RollDefaultParams.k_p = 0.3;
+  RollDefaultParams.k_p = 0.05;
   RollDefaultParams.k_i = 0.0;
-  RollDefaultParams.k_d = 0.0;
+  RollDefaultParams.k_d = 0.05;
 
   PidController::Parameters VspeedDefaultParams;
   VspeedDefaultParams.k_p = 1.0;
@@ -48,7 +48,7 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   VspeedDefaultParams.k_d = 0.0;
 
   PidController::Parameters YawDefaultParams;
-  YawDefaultParams.k_p = 1.0;
+  YawDefaultParams.k_p = 1.5;
   YawDefaultParams.k_i = 0.0;
   YawDefaultParams.k_d = 0.0;
 
@@ -276,21 +276,56 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
   }
 
   // Compute error signal time derivatives
-  e_dot = (-1 * C_SW) * x.v_W;
-  e_dot_yaw = 0.0;
+  Eigen::Vector3d e_dot = (-1 * C_SW) * x.v_W;
+  double e_dot_yaw = 0.0;
 
-  
+
   // TODO: only enable when in flight
   DroneStatus status = droneStatus();
   if (status == DroneStatus::Flying) {
+    // TODO: get ros parameter
+    double max_phi, max_theta, max_velocity, max_rotation;
+    // Bool to check if the parameters reading are ok
+    bool stop(false);
+    if (! nh_->getParam("/ardrone_driver/euler_angle_max", max_phi)) { stop = true;}
+    if (! nh_->getParam("/ardrone_driver/euler_angle_max", max_theta)) { stop = true;}
+    if (! nh_->getParam("/ardrone_driver/control_vz_max", max_velocity)) { stop = true;}
+    if (! nh_->getParam("/ardrone_driver/control_yaw", max_rotation)) { stop = true;}
+
+    if (!stop)
+    {
+      // convert max velocity from mm/s to m/s
+      max_velocity /= 1000;
+
+      //TODO: compute control output
+      // compute outputs from PID controller class members
+      double output_Pitch, output_Roll, output_Yaw, output_Vspeed;
+      output_Pitch = PitchPID.control(timeMicroseconds, e_r[0], e_dot[0]);  // e and e_dot to be provided
+      output_Roll = RollPID.control(timeMicroseconds, e_r[1], e_dot[1]);  // e and e_dot to be provided
+      output_Yaw = YawPID.control(timeMicroseconds, e_yaw, e_dot_yaw);  // e and e_dot to be provided
+      output_Vspeed = VspeedPID.control(timeMicroseconds, e_r[2], e_dot[2]);  // e and e_dot to be provided
+
+      // Scale these outputs by the ROS parameters obtained above
+      output_Roll /= max_phi;
+      output_Pitch /= max_theta;
+      output_Yaw /= max_rotation;
+      output_Vspeed /= max_velocity;
+
+      // TODO: send to move
+       move(output_Pitch, output_Roll, output_Vspeed, output_Yaw);
+    }
+    else {
+      std::cout << "Issue while reading ROS parameters, PID output not computed";
+    }
 
   }
 
-  // TODO: get ros parameter
 
-  // TODO: compute control output
 
-  // TODO: send to move
+
+
+
+
 
 }
 
