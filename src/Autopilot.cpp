@@ -24,7 +24,8 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   pubReset_ = nh_->advertise<std_msgs::Empty>("/ardrone/reset", 1);
   pubTakeoff_ = nh_->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
   pubLand_ = nh_->advertise<std_msgs::Empty>("/ardrone/land", 1);
-  pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  // pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel_dummy", 1);
   pubPose_ = nh_->advertise<geometry_msgs::PoseStamped>("/ardrone/camera_pose",1);
 
   // flattrim service
@@ -274,9 +275,9 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
   else if (e_yaw > M_PI) {
     e_yaw = e_yaw - (2 * M_PI);
   }
-
+  std::cout << "e_r" << e_r[0] << e_r[1] << e_r[2]<< std::endl;
   // Compute error signal time derivatives
-  Eigen::Vector3d e_dot = (-1 * C_SW) * x.v_W;
+  Eigen::Vector3d e_dot = (-C_SW) * x.v_W;
   double e_dot_yaw = 0.0;
 
 
@@ -285,6 +286,8 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
   if (status == DroneStatus::Flying) {
     // TODO: get ros parameter
     double max_phi, max_theta, max_velocity, max_rotation;
+
+    std::cout << "Phi, Theta, velocity, Rotation:" << max_phi << max_theta << max_velocity << max_rotation << std::endl;
     // Bool to check if the parameters reading are ok
     bool stop(false);
     if (! nh_->getParam("/ardrone_driver/euler_angle_max", max_phi)) { stop = true;}
@@ -305,14 +308,18 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       output_Yaw = YawPID.control(timeMicroseconds, e_yaw, e_dot_yaw);  // e and e_dot to be provided
       output_Vspeed = VspeedPID.control(timeMicroseconds, e_r[2], e_dot[2]);  // e and e_dot to be provided
 
+      std::cout << "PRE: P, R, V, YAW:" << output_Pitch << output_Roll << output_Vspeed << output_Yaw << std::endl;
+
       // Scale these outputs by the ROS parameters obtained above
       output_Roll /= max_phi;
       output_Pitch /= max_theta;
       output_Yaw /= max_rotation;
       output_Vspeed /= max_velocity;
 
+      std::cout << "P, R, V, YAW:" << output_Pitch << output_Roll << output_Vspeed << output_Yaw << std::endl;
       // TODO: send to move
        move(output_Pitch, output_Roll, output_Vspeed, output_Yaw);
+       // move(1.0, 1.0, 1.0, 1.0);
     }
     else {
       std::cout << "Issue while reading ROS parameters, PID output not computed";

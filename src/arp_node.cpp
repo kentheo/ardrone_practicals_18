@@ -208,6 +208,10 @@ int main(int argc, char **argv)
       frontend.undistortedCameraModel();
   viefk.setCameraIntrinsics(undistCam); //sets the camera parameters, eg. model, properties
 
+  // Call autopilot after computing the state ???????
+  visualTracker.setControllerCallback(std::bind(&arp::Autopilot::controllerCallback, &autopilot,
+  std::placeholders::_1, std::placeholders::_2));
+  
   visualTracker.setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
     &posePublisher, std::placeholders::_1, std::placeholders::_2));
 
