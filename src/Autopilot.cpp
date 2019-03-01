@@ -7,6 +7,7 @@
 
 #include <arp/Autopilot.hpp>
 #include <arp/kinematics/operators.hpp>
+#include <cmath>
 
 namespace arp {
 
@@ -31,10 +32,26 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
       nh_->resolveName("ardrone/flattrim"), 1);
 
   pose_stamped_seq = 0;
-  PidController::Parameters PitchDefaultParams = { .k_p = 0.1, .k_i =0., .k_d = 0.};
-  PidController::Parameters RollfaultParams = { .k_p = 0.1, .k_i =0., .k_d = 0.};
-  PidController::Parameters VspeedDefaultParams = { .k_p = 1., .k_i =0., .k_d = 0.};
-  PidController::Parameters YawDefaultParams = { .k_p = 1., .k_i =0., .k_d = 0.};
+  PidController::Parameters PitchDefaultParams;
+  PitchDefaultParams.k_p = 0.3;
+  PitchDefaultParams.k_i = 0.0;
+  PitchDefaultParams.k_d = 0.0;
+
+  PidController::Parameters RollDefaultParams;
+  RollDefaultParams.k_p = 0.3;
+  RollDefaultParams.k_i = 0.0;
+  RollDefaultParams.k_d = 0.0;
+
+  PidController::Parameters VspeedDefaultParams;
+  VspeedDefaultParams.k_p = 1.0;
+  VspeedDefaultParams.k_i = 0.0;
+  VspeedDefaultParams.k_d = 0.0;
+
+  PidController::Parameters YawDefaultParams;
+  YawDefaultParams.k_p = 1.0;
+  YawDefaultParams.k_i = 0.0;
+  YawDefaultParams.k_d = 0.0;
+
 
   PitchPID.setParameters(PitchDefaultParams);
   RollPID.setParameters(RollDefaultParams);
@@ -167,6 +184,7 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   geometry_msgs::Quaternion quat;
 
   quat.x = q.x();
+
   quat.y = q.y();
   quat.z = q.z();
   quat.w = q.w();
@@ -240,8 +258,33 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
     setPoseReference(x.r_W[0], x.r_W[1], x.r_W[2], yaw);
     return;
   }
+  // Compute position error signal
+  kinematics::Transformation T_WS(x.r_W, x.q_WS);
+  Eigen::Matrix3d C_SW = T_WS.C();
+  Eigen::Vector3d ref_x_WS= { ref_x_, ref_y_, ref_z_};
+  Eigen::Vector3d e_r = C_SW * (ref_x_WS - x.r_W);
 
+  // Compute yaw error
+  double yaw = kinematics::yawAngle(x.q_WS);
+  double e_yaw = ref_yaw_ - yaw;
+  // Wrap_around: Adjust yaw error to be within limit [-pi, pi]
+  if (e_yaw < - M_PI) {
+    e_yaw = e_yaw + (2 * M_PI);
+  }
+  else if (e_yaw > M_PI) {
+    e_yaw = e_yaw - (2 * M_PI);
+  }
+
+  // Compute error signal time derivatives
+  e_dot = (-1 * C_SW) * x.v_W;
+  e_dot_yaw = 0.0;
+
+  
   // TODO: only enable when in flight
+  DroneStatus status = droneStatus();
+  if (status == DroneStatus::Flying) {
+
+  }
 
   // TODO: get ros parameter
 
