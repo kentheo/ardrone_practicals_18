@@ -40,6 +40,8 @@ arp::cameras::PinholeCamera<arp::cameras::NoDistortion>
 
 int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
 {
+  // Clear detections
+  detections.clear();
   //undistort the input image and transform to grayscale
   cv::Mat undistorted_grey_image;
   cv::Mat distorted_grey_image;
@@ -65,9 +67,9 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         float targetSize = idToSize_[detected_ID];
         Eigen::Matrix4d transform = rawdetection.getRelativeTransform(targetSize,fu, fv, cu, cv);
         Detection detection; // maybe add arp:: etc.
-        std::cout << "transform T_CT:" << transform;
+        //std::cout << "transform T_CT:" << transform;
         detection.T_CT = kinematics::Transformation(transform);
-        std::cout << "deection T_CT:" << kinematics::Transformation(transform).T();
+        //std::cout << "deection T_CT:" << kinematics::Transformation(transform).T();
 
         const std::pair<float, float> *pi = rawdetection.p;
         Eigen::Matrix<double, 2, 4> matrix;
@@ -80,7 +82,7 @@ int Frontend::detect(const cv::Mat& image, DetectionVec & detections)
         matrix(1,1) = pi[1].second;
         matrix(1,2) = pi[2].second;
         matrix(1,3) = pi[3].second;
-        std::cout<< "Matrix: " << matrix;
+        //std::cout<< "Matrix: " << matrix;
         detection.points = matrix;
         detection.id = detected_ID;
         detections.push_back(detection);
