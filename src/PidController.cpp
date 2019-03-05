@@ -10,7 +10,7 @@
 #include <cmath>
 
 namespace arp {
-
+using namespace std;
 // Set the controller parameters
 void PidController::setParameters(const Parameters & parameters)
 {
@@ -30,7 +30,7 @@ double PidController::control(uint64_t timestampMicroseconds, double e,
   double output;
   output = parameters_.k_p * e + parameters_.k_i * integratedError_
             + parameters_.k_d * e_dot;
-
+  //std::cout << "min output"<< output << minOutput_<< std::endl;
   if (output < minOutput_) {
     output = minOutput_; // Clamp and DO NOT Integrate error
   }
