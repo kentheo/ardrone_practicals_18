@@ -34,13 +34,13 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
 
   pose_stamped_seq = 0;
   PidController::Parameters PitchDefaultParams;
-  PitchDefaultParams.k_p = 0.05;  // previous 0.07
-  PitchDefaultParams.k_i = 0.0;  //0.08, 0.2
+  PitchDefaultParams.k_p = 0.07;  // previous 0.07
+  PitchDefaultParams.k_i = 0.2;  //0.08, 0.2
   PitchDefaultParams.k_d = 0.05; //0.04
 
   PidController::Parameters RollDefaultParams;
-  RollDefaultParams.k_p = 0.05; // previous 0.07
-  RollDefaultParams.k_i = 0.0;  //0.08
+  RollDefaultParams.k_p = 0.07; // previous 0.07
+  RollDefaultParams.k_i = 0.2;  //0.08
   RollDefaultParams.k_d = 0.05;
 
   PidController::Parameters VspeedDefaultParams;
