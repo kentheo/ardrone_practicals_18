@@ -167,6 +167,7 @@ CameraBase::ProjectionStatus PinholeCamera<DISTORTION_T>::project(
 {
 
   if (point(2) < 0) return CameraBase::ProjectionStatus::Behind;
+  if (point(2) == 0) return CameraBase::ProjectionStatus::Invalid;
 
   // Project to unit plane
   Eigen::Vector2d imagePoint2;
