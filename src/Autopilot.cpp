@@ -35,17 +35,17 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   pose_stamped_seq = 0;
   PidController::Parameters PitchDefaultParams;
   PitchDefaultParams.k_p = 0.07;  // previous 0.07
-  PitchDefaultParams.k_i = 0.2;  //0.08, 0.2
-  PitchDefaultParams.k_d = 0.05; //0.04
+  PitchDefaultParams.k_i = 0.02;  //0.08, 0.2
+  PitchDefaultParams.k_d = 0.04; //0.04
 
   PidController::Parameters RollDefaultParams;
   RollDefaultParams.k_p = 0.07; // previous 0.07
-  RollDefaultParams.k_i = 0.2;  //0.08
-  RollDefaultParams.k_d = 0.05;
+  RollDefaultParams.k_i = 0.02;  //0.08
+  RollDefaultParams.k_d = 0.04;
 
   PidController::Parameters VspeedDefaultParams;
   VspeedDefaultParams.k_p = 1.0;
-  VspeedDefaultParams.k_i = 0.1;
+  VspeedDefaultParams.k_i = 0.15;
   VspeedDefaultParams.k_d = 0.0;
 
   PidController::Parameters YawDefaultParams;
@@ -266,8 +266,9 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
     return;
   }
   // Compute position error signal
-  kinematics::Transformation T_WS(x.r_W, x.q_WS);
-  Eigen::Matrix3d C_SW = T_WS.C();
+  kinematics::Transformation T_WS(x.r_W, x.q_WS);   //use quaternion and/or inverse
+  kinematics::Transformation T_SW = T_WS.inverse();
+  Eigen::Matrix3d C_SW = T_SW.C();
   Eigen::Vector3d ref_x_WS= { ref_x_, ref_y_, ref_z_};
   Eigen::Vector3d e_r = C_SW * (ref_x_WS - x.r_W);
 
@@ -309,26 +310,26 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       //TODO: compute control output
       //Bogdan later edit: set max for PidControllers
       //Not sure what is the min
-      //PHY = roll = Around X
-      //Theta = pitch = around Y
+      //PHY = pitch =  X
+      //Theta = roll = Y
       //State Output=[pitch,Roll,Vspeed, yaw]
 
-      RollPID.setOutputLimits(-max_phi, max_phi);
-      PitchPID.setOutputLimits(-max_theta, max_theta);
+      PitchPID.setOutputLimits(-max_phi, max_phi);
+      RollPID.setOutputLimits(-max_theta, max_theta);
       YawPID.setOutputLimits(-max_rotation, max_rotation);
       VspeedPID.setOutputLimits(-max_velocity, max_velocity);
       // compute outputs from PID controller class members
       double output_Pitch, output_Roll, output_Yaw, output_Vspeed;
-      output_Roll = RollPID.control(timeMicroseconds, e_r[0], e_dot[0]);  // e and e_dot to be provided
-      output_Pitch = PitchPID.control(timeMicroseconds, e_r[1], e_dot[1]);  // e and e_dot to be provided
+      output_Pitch = PitchPID.control(timeMicroseconds, e_r[0], e_dot[0]);  // e and e_dot to be provided
+      output_Roll = RollPID.control(timeMicroseconds, e_r[1], e_dot[1]);  // e and e_dot to be provided
       output_Vspeed = VspeedPID.control(timeMicroseconds, e_r[2], e_dot[2]);  // e and e_dot to be provided
       output_Yaw = YawPID.control(timeMicroseconds, e_yaw, e_dot_yaw);  // e and e_dot to be provide
 
       std::cout << "PRE: P, R, V, YAW:" << output_Pitch << output_Roll << output_Vspeed << output_Yaw << std::endl;
 
       // Scale these outputs by the ROS parameters obtained above
-      output_Roll /= max_phi;
-      output_Pitch /= max_theta;
+      output_Pitch /= max_phi;
+      output_Roll /= max_theta;
       output_Vspeed /= max_velocity;
       output_Yaw /= max_rotation;
 
