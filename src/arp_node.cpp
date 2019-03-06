@@ -24,7 +24,7 @@
 #include <arp/VisualInertialTracker.hpp>
 #include <arp/ViEkf.hpp>
 #include <arp/StatePublisher.hpp>
-#include <arp/InteractiveMarkerServer.hpp>
+//#include <arp/InteractiveMarkerServer.hpp>
 
 
 
@@ -165,14 +165,25 @@ int main(int argc, char **argv)
   // ros::Rate rate(10);
 
   // CW 4 InteractiveMarkerServer
-  arp::InteractiveMarkerServer marker_server(autopilot);
-  double x, y, z, yaw;
-  autopilot.getPoseReference(x, y, z, yaw);
-  marker_server.activate(x, y, z, yaw);
+  //commented for challange task
+  //arp::InteractiveMarkerServer marker_server(autopilot);
+  //double x, y, z, yaw;
+  //autopilot.getPoseReference(x, y, z, yaw);
+  //marker_server.activate(x, y, z, yaw);
 
   arp::Frontend frontend;
   frontend.setCameraParameters(imageWidth,imageHeight,fu,fv,cu,cv,k1,k2,p1,p2);
-  frontend.setTarget(0, tagSize);
+  // set frontend targets
+  for(size_t i=0; i<=8; ++i) {
+    frontend->setTarget(i,0.158);
+  }
+
+  for(size_t i=10; i<=18; ++i) {
+    frontend->setTarget(i,0.158);
+  }
+
+  //commented for final Challenge
+  // frontend.setTarget(0, tagSize);
 
   //Visual Inertial Tracker Integration
   arp::VisualInertialTracker visualTracker; //= arp::VisualInertialTracker();
@@ -183,15 +194,62 @@ int main(int argc, char **argv)
   visualTracker.setEstimator(viefk);
   subscriber.visualTrackerPtr = &visualTracker;
 
-  // register the AprilTag
-  Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
-  trs << 1, 0, 0 ,0,
-         0, 0, -1, 0,
-         0, 1, 0, 0,
-         0, 0, 0, 1;
+  //below removed for Challenge task
+  // // register the AprilTag
+  // Eigen::Matrix<double,4,4> trs = Eigen::Matrix<double,4,4>::Identity();
+  // trs << 1, 0, 0 ,0,
+  //        0, 0, -1, 0,
+  //        0, 1, 0, 0,
+  //        0, 0, 0, 1;
+  //
+  // arp::kinematics::Transformation transform(trs);
+  // viefk.setTarget(0,transform,tagSize);
 
-  arp::kinematics::Transformation transform(trs);
-  viefk.setTarget(0,transform,tagSize);
+  // init estimator targets
+    Eigen::Matrix3d C_WT;
+    C_WT << 0.000000000000000, 0.000000000000000, 1.000000000000000,
+            1.000000000000000, 0.000000000000000, 0.000000000000000,
+            0.000000000000000, 1.000000000000000, 0.000000000000000;
+    const double target_size = 0.1725;
+    Eigen::Quaterniond q_WT(C_WT);
+    typedef arp::kinematics::Transformation tf_t;
+    typedef Eigen::Vector3d vec3_t;
+    tf_t T_WT0{vec3_t{0.0, 2.221, 1.653}, q_WT};
+    viefk.setTarget(0, T_WT0, target_size);
+    tf_t T_WT1{vec3_t{0.0, 2.994, 1.648}, q_WT};
+    viefk.setTarget(1, T_WT1, target_size);
+    tf_t T_WT2{vec3_t{0.0, 3.224, 1.649}, q_WT};
+    viefk.setTarget(2, T_WT2, target_size);
+    tf_t T_WT3{vec3_t{0.0, 3.997, 1.654}, q_WT};
+    viefk.etTarget(3, T_WT3, target_size);
+    tf_t T_WT4{vec3_t{0.0, 4.225, 1.657}, q_WT};
+    viefk.setTarget(4, T_WT4, target_size);
+    tf_t T_WT5{vec3_t{0.0, 5.000, 1.654}, q_WT};
+    viefk.setTarget(5, T_WT5, target_size);
+    tf_t T_WT6{vec3_t{0.0, 5.658, 1.650}, q_WT};
+    viefk.setTarget(6, T_WT6, target_size);
+    tf_t T_WT7{vec3_t{0.0, 6.418, 1.650}, q_WT};
+    viefk.setTarget(7, T_WT7, target_size);
+    tf_t T_WT8{vec3_t{0.0, 7.194, 1.649}, q_WT};
+    viefk.setTarget(8, T_WT8, target_size);
+    tf_t T_WT10{vec3_t{0.0, 2.218, 0.952}, q_WT};
+    viefk.setTarget(10, T_WT10, target_size);
+    tf_t T_WT11{vec3_t{0.0, 2.993, 0.952}, q_WT};
+    viefk.setTarget(11, T_WT11, target_size);
+    tf_t T_WT12{vec3_t{0.0, 3.222, 0.952}, q_WT};
+    viefk.setTarget(12, T_WT12, target_size);
+    tf_t T_WT13{vec3_t{0.0, 3.995, 0.956}, q_WT};
+    viefk.setTarget(13, T_WT13, target_size);
+    tf_t T_WT14{vec3_t{0.0, 4.225, 0.956}, q_WT};
+    viefk.setTarget(14, T_WT14, target_size);
+    tf_t T_WT15{vec3_t{0.0, 4.997, 0.951}, q_WT};
+    viefk.setTarget(15, T_WT15, target_size);
+    tf_t T_WT16{vec3_t{0.0, 5.653, 0.950}, q_WT};
+    viefk.setTarget(16, T_WT16, target_size);
+    tf_t T_WT17{vec3_t{0.0, 6.412, 0.947}, q_WT};
+    viefk.setTarget(17, T_WT17, target_size);
+    tf_t T_WT18{vec3_t{0.0, 7.189, 0.942}, q_WT};
+    viefk.setTarget(18, T_WT18, target_size);
 
   //set camera Extrinsics
   Eigen::Matrix4d T_SC_mat;
@@ -211,7 +269,7 @@ int main(int argc, char **argv)
   // Call autopilot after computing the state ???????
   visualTracker.setControllerCallback(std::bind(&arp::Autopilot::controllerCallback, &autopilot,
   std::placeholders::_1, std::placeholders::_2));
-  
+
   visualTracker.setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
     &posePublisher, std::placeholders::_1, std::placeholders::_2));
 
@@ -240,8 +298,6 @@ int main(int argc, char **argv)
 
       // Undistort image
       pinCam.undistortImage(image, image);
-
-
 
       //Task4 week2
       //print tags
