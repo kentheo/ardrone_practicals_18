@@ -34,6 +34,7 @@
 // catkin_make -DCMAKE_BUILD_TYPE=Release
 // roslaunch ardrone_practicals arp.launch
 // roslaunch ardrone_practicals arp_rviz.launch
+// roslaunch ardrone_practicals arp_check_control.launch
 // 2>&1 | tee SomeFile.txt
 
 class Subscriber
@@ -211,7 +212,7 @@ int main(int argc, char **argv)
   // Call autopilot after computing the state ???????
   visualTracker.setControllerCallback(std::bind(&arp::Autopilot::controllerCallback, &autopilot,
   std::placeholders::_1, std::placeholders::_2));
-  
+
   visualTracker.setVisualisationCallback(std::bind(&arp::StatePublisher::publish,
     &posePublisher, std::placeholders::_1, std::placeholders::_2));
 
