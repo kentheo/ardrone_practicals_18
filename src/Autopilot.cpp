@@ -181,9 +181,11 @@ bool Autopilot::publishTag(arp::Frontend::Detection det){
   Eigen::Vector3d r =  T_TC.r();
 
   geometry_msgs::Point point;
+  //Horisontal position
   // point.x = r[2];
   // point.y = r[0];
   // point.z = r[1];
+  //Vertical tag position
   point.x = r[0];
   point.y = r[1];
   point.z = r[2];
@@ -258,6 +260,38 @@ bool Autopilot::getPoseReference(double& x, double& y, double& z, double& yaw) {
 void Autopilot::controllerCallback(uint64_t timeMicroseconds,
                                   const arp::kinematics::RobotState& x)
 {
+
+  //get reference position
+  Eigen::Vector3d ref_pos;//= { ref_pos_x, ref_pos_y, ref_pos_z};
+  double ref_pos_yaw;
+
+  // Get waypoint list, if available
+  //Bogdan: Not sur eif we have to to anything here, for the above comment
+  {
+  std::lock_guard<std::mutex> l(waypointMutex_);
+  if(!waypoints_.empty()) {
+    // TODO: setPoseReference() from current waypoint
+    //B: Not sure if is a stack or a queue. If queue replace front() with back()
+    Waypoint wp = waypoints_.front();
+    setPoseReference(wp.x, wp.y, wp.z, wp.yaw);
+
+    getPoseReference(ref_pos[0], ref_pos[1],ref_pos[2], ref_pos_yaw);
+
+    // TODO: remove the current waypoint, if the position error is below the tolerance.
+    Eigen::Vector3d error = ref_pos - x.r_W;
+    //B: Do we need some kind of modulus here? as we have to be in a certain circular range
+    // from the desired position
+    if(error[0] < wp.posTolerance && error[1] < wp.posTolerance && error[2] <wp.posTolerance){
+      //maybe pop_back()
+      waypoints_.pop_front();
+    }
+
+  } else {
+    // This is the original line of code:
+    getPoseReference(ref_pos[0], ref_pos[1],ref_pos[2], ref_pos_yaw);
+    }
+  }
+
   // only do anything here, if automatic
   if (!isAutomatic_) {
     // keep resetting this to make sure we use the current state as reference as soon as sent to automatic mode
@@ -265,6 +299,7 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
     setPoseReference(x.r_W[0], x.r_W[1], x.r_W[2], yaw);
     return;
   }
+
   // Compute position error signal
   kinematics::Transformation T_WS(x.r_W, x.q_WS);   //use quaternion and/or inverse
   kinematics::Transformation T_SW = T_WS.inverse();
@@ -274,7 +309,7 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
 
   // Compute yaw error
   double yaw = kinematics::yawAngle(x.q_WS);
-  double e_yaw = ref_yaw_ - yaw;
+  double e_yaw = ref_pos_yaw - yaw;
   // Wrap_around: Adjust yaw error to be within limit [-pi, pi]
   if (e_yaw < - M_PI) {
     e_yaw = e_yaw + (2 * M_PI);
@@ -308,6 +343,7 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       max_velocity /= 1000;
 
       //TODO: compute control output
+
       //Bogdan later edit: set max for PidControllers
       //Not sure what is the min
       //PHY = pitch =  X
