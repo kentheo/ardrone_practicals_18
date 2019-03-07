@@ -133,6 +133,13 @@ int main(int argc, char **argv)
   const int imageWidth = 640;
   const int imageHeight = 360;
 
+  // Boolean for Challenge
+  bool flyChallenge = false;
+
+  // Boolean to check if Challenge is done
+  bool finishedChallenge = false;
+  bool wayback = false;
+
   nh.getParam("/arp_node/k1", k1);
   nh.getParam("/arp_node/k2", k2);
   nh.getParam("/arp_node/p1", p1);
@@ -252,6 +259,58 @@ int main(int argc, char **argv)
     tf_t T_WT18{vec3_t{0.0, 7.189, 0.942}, q_WT};
     viefk.setTarget(18, T_WT18, target_size);
 
+  // Set the waypoints for the CHALLENGE
+  std::deque<arp::Autopilot::Waypoint> waypoints_forth;
+  std::deque<arp::Autopilot::Waypoint> waypoints_back;
+  // Start point
+  arp::Autopilot::Waypoint pointA;
+  pointA.x = 2.8;
+  pointA.y = 2.2;
+  pointA.z = 1.4;
+  pointA.yaw = 2.7;
+  pointA.posTolerance = 0.1;
+  // Intermediate point 1
+  arp::Autopilot::Waypoint pointC;
+  pointC.x = 1.8;
+  pointC.y = 2.2;
+  pointC.z = 1.4;
+  pointC.yaw = 2.7;
+  pointC.posTolerance = 0.1;
+  // Intermediate point 2
+  arp::Autopilot::Waypoint pointD;
+  pointD.x = 1.8;
+  pointD.y = 4.2;
+  pointD.z = 1.4;
+  pointD.yaw = 2.7;
+  pointD.posTolerance = 0.1;
+  // Intermediate point 3
+  arp::Autopilot::Waypoint pointE;
+  pointE.x = 1.8;
+  pointE.y = 6.5;
+  pointE.z = 1.4;
+  pointE.yaw = 2.7;
+  pointE.posTolerance = 0.1;
+  // Delivery point
+  arp::Autopilot::Waypoint pointB;
+  pointB.x = 2.8;
+  pointB.y = 6.5;
+  pointB.z = 1.4;
+  pointB.yaw = 2.7;
+  pointB.posTolerance = 0.1;
+  // Add all the above points to the deque
+  waypoints_forth.push_back(pointA);  // start
+  waypoints_forth.push_back(pointC);
+  waypoints_forth.push_back(pointD);
+  waypoints_forth.push_back(pointE);
+  waypoints_forth.push_back(pointB);  // delivery
+
+  waypoints_back.push_front(pointA);  // deliver
+  waypoints_back.push_front(pointC);
+  waypoints_back.push_front(pointD);
+  waypoints_back.push_front(pointE);
+  waypoints_back.push_front(pointB);  // back
+
+
   //set camera Extrinsics
   Eigen::Matrix4d T_SC_mat;
   T_SC_mat << -0.00195087, -0.03257782, 0.99946730, 0.17409445,
@@ -291,6 +350,34 @@ int main(int argc, char **argv)
 
     // check states!640, 360, 350, 360, 320, 130,
     auto droneStatus = autopilot.droneStatus();
+
+    // Check if we are doings tasks for the challenge and that the drone is in auto status
+    if (flyChallenge && autopilot.isAutomatic() && autopilot.waypointsLeft() == 0) {
+      bool success = autopilot.land();
+      if (success) {
+        std::cout << " Should be landing right now! " << std::endl;
+        if (autopilot.droneStatus() == arp::Autopilot::Landed && !wayback) {
+          autopilot.flyPath(waypoints_back);
+          wayback = true;
+          // Take off now
+          bool success_t = autopilot.takeoff();
+          if (success_t) {
+            std::cout << " Should be taking off right now! " << std::endl;
+          }
+
+        }
+        if (autopilot.droneStatus() == arp::Autopilot::Landed && wayback) {
+          std::cout << " Challenge done " << std::endl;
+          flyChallenge = false;
+          autopilot.setManual();
+
+        }
+      }
+
+
+
+
+    }
 
     // render image, if there is a new one available
     cv::Mat image;
@@ -411,7 +498,7 @@ int main(int argc, char **argv)
       }
     }
 
-    // NEW CW5 : automatic fligh
+    // NEW CW5 : automatic flight
     //  right Ctrl (SDL_SCANCODE_RCTRL) key to enable automatic control
     if (state[SDL_SCANCODE_RCTRL]) {
       std::cout << "Going to automatic control..." << std::endl;
@@ -421,7 +508,27 @@ int main(int argc, char **argv)
     // spacebar (SDL_SCANCODE_SPACE) to go back to manual
     if (state[SDL_SCANCODE_SPACE]) {
       std::cout << "Going back to manual mode ..." << std::endl;
+      // Addition for CHALLENGE
+      flyChallenge = false;
       autopilot.setManual();
+    }
+
+    // CHALLENGE TASK: press P-key
+    if (state[SDL_SCANCODE_P]) {
+      if (droneStatus == arp::Autopilot::Flying || droneStatus == arp::Autopilot::Hovering ||
+                  droneStatus == arp::Autopilot::Flying2) {
+        std::cout << "Startin Amazin Challenge ..." << std::endl;
+        flyChallenge = true;
+        autopilot.setAutomatic();
+
+        // Set the waypoints to the autopilot
+        // The autopilot callback will automatically detect the list is not
+        // empty, and start the challenge
+        autopilot.flyPath(waypoints_forth);
+
+    // TODO: check more conditions, do stuff
+    }
+
     }
 
     // Check if we are in manual mode before accepting control commands
