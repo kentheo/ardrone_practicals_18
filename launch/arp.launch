@@ -34,5 +34,16 @@
   <!-- Launch estimator / control arp_node. -->
   <node name="arp_node" pkg="ardrone_practicals" type="arp_node" output="screen">
 	  <remap from="/cmd_vel" to="/cmd_vel"/>
+
+    <param name="fu" value="569.46" />
+    <param name="fv" value="572.26" />
+    <param name="cu" value="320.00" />
+    <param name="cv" value="149.25" />
+    <param name="k1" value="-0.541596" />
+    <param name="k2" value="0.307486" />
+    <param name="p1" value="-0.000014" />
+    <param name="p2" value="0.001816" />
 	</node>
+
+
 </launch>

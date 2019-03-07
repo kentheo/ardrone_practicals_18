@@ -24,8 +24,8 @@ Autopilot::Autopilot(ros::NodeHandle& nh)
   pubReset_ = nh_->advertise<std_msgs::Empty>("/ardrone/reset", 1);
   pubTakeoff_ = nh_->advertise<std_msgs::Empty>("/ardrone/takeoff", 1);
   pubLand_ = nh_->advertise<std_msgs::Empty>("/ardrone/land", 1);
-  // pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-  pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel_dummy", 1);
+  pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+  //pubMove_ = nh_->advertise<geometry_msgs::Twist>("/cmd_vel_dummy", 1);
   pubPose_ = nh_->advertise<geometry_msgs::PoseStamped>("/ardrone/camera_pose",1);
 
   // flattrim service
@@ -272,12 +272,13 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
 
   // Get waypoint list, if available
   //Bogdan: Not sure if we have to to anything here, for the above comment
-  {
+  //{
   std::lock_guard<std::mutex> l(waypointMutex_);
   if(!waypoints_.empty()) {
     // TODO: setPoseReference() from current waypoint
     //B: Not sure if is a stack or a queue. If queue replace front() with back()
     Waypoint wp = waypoints_.front();
+    std::cout << "Waypoint coordinates :" << wp.x << " " << wp.y << " " << wp.z << " " << wp.yaw << std::endl;
     setPoseReference(wp.x, wp.y, wp.z, wp.yaw);
 
     getPoseReference(ref_pos[0], ref_pos[1], ref_pos[2], ref_pos_yaw);
@@ -295,7 +296,7 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       // This is the original line of code:
       getPoseReference(ref_pos[0], ref_pos[1], ref_pos[2], ref_pos_yaw);
     }
-  }
+
 
   // only do anything here, if automatic
   if (!isAutomatic_) {

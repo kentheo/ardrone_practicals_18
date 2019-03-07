@@ -354,6 +354,7 @@ int main(int argc, char **argv)
     // Check if we are doings tasks for the challenge and that the drone is in auto status
     if (flyChallenge && autopilot.isAutomatic() && autopilot.waypointsLeft() == 0) {
       bool success = autopilot.land();
+      autopilot.setManual();
       if (success) {
         std::cout << " Should be landing right now! " << std::endl;
         if (autopilot.droneStatus() == arp::Autopilot::Landed && !wayback) {
@@ -361,6 +362,7 @@ int main(int argc, char **argv)
           wayback = true;
           // Take off now
           bool success_t = autopilot.takeoff();
+          autopilot.setAutomatic();
           if (success_t) {
             std::cout << " Should be taking off right now! " << std::endl;
           }
@@ -525,9 +527,7 @@ int main(int argc, char **argv)
         // The autopilot callback will automatically detect the list is not
         // empty, and start the challenge
         autopilot.flyPath(waypoints_forth);
-
-    // TODO: check more conditions, do stuff
-    }
+      }
 
     }
 
@@ -586,11 +586,9 @@ int main(int argc, char **argv)
 
     }
 
-
-
-
   }
 
+// END OR ROS LOOP
 
   // make sure to land the drone...
   bool success = autopilot.land();
