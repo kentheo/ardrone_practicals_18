@@ -266,48 +266,84 @@ int main(int argc, char **argv)
   arp::Autopilot::Waypoint pointA;
   pointA.x = 2.8;
   pointA.y = 2.2;
-  pointA.z = 1.4;
-  pointA.yaw = 2.7;
+  pointA.z = 1.2;
+  pointA.yaw = 3.1;
   pointA.posTolerance = 0.1;
   // Intermediate point 1
+  arp::Autopilot::Waypoint pointA2;
+  pointA2.x = 2.3;
+  pointA2.y = 2.2;
+  pointA2.z = 1.2;
+  pointA2.yaw = 3.1;
+  pointA2.posTolerance = 0.1;
+  // Intermediate point 2
   arp::Autopilot::Waypoint pointC;
   pointC.x = 1.8;
   pointC.y = 2.2;
-  pointC.z = 1.4;
-  pointC.yaw = 2.7;
+  pointC.z = 1.2;
+  pointC.yaw = 3.1;
   pointC.posTolerance = 0.1;
+  // Intermediate point 2
+  arp::Autopilot::Waypoint pointC2;
+  pointC2.x = 1.8;
+  pointC2.y = 3.2;
+  pointC2.z = 1.2;
+  pointC2.yaw = 3.1;
+  pointC2.posTolerance = 0.1;
   // Intermediate point 2
   arp::Autopilot::Waypoint pointD;
   pointD.x = 1.8;
   pointD.y = 4.2;
-  pointD.z = 1.4;
-  pointD.yaw = 2.7;
+  pointD.z = 1.2;
+  pointD.yaw = 3.1;
   pointD.posTolerance = 0.1;
+  // Intermediate point 2
+  arp::Autopilot::Waypoint pointD2;
+  pointD2.x = 1.8;
+  pointD2.y = 5.3;
+  pointD2.z = 1.2;
+  pointD2.yaw = 3.1;
+  pointD2.posTolerance = 0.1;
   // Intermediate point 3
   arp::Autopilot::Waypoint pointE;
   pointE.x = 1.8;
   pointE.y = 6.5;
-  pointE.z = 1.4;
-  pointE.yaw = 2.7;
+  pointE.z = 1.2;
+  pointE.yaw = 3.1;
   pointE.posTolerance = 0.1;
+  // Intermediate point 4
+  arp::Autopilot::Waypoint pointB2;
+  pointB2.x = 2.3;
+  pointB2.y = 6.5;
+  pointB2.z = 1.2;
+  pointB2.yaw = 3.1;
+  pointB2.posTolerance = 0.1;
   // Delivery point
   arp::Autopilot::Waypoint pointB;
   pointB.x = 2.8;
   pointB.y = 6.5;
-  pointB.z = 1.4;
-  pointB.yaw = 2.7;
+  pointB.z = 1.2;
+  pointB.yaw = 3.1;
   pointB.posTolerance = 0.1;
   // Add all the above points to the deque
   waypoints_forth.push_back(pointA);  // start
+  waypoints_forth.push_back(pointA2);
   waypoints_forth.push_back(pointC);
+  waypoints_forth.push_back(pointC2);
   waypoints_forth.push_back(pointD);
+  waypoints_forth.push_back(pointD2);
   waypoints_forth.push_back(pointE);
+  waypoints_forth.push_back(pointB2);
   waypoints_forth.push_back(pointB);  // delivery
 
   waypoints_back.push_front(pointA);  // deliver
+  waypoints_back.push_front(pointA2);
   waypoints_back.push_front(pointC);
+  waypoints_back.push_front(pointC2);
   waypoints_back.push_front(pointD);
+  waypoints_back.push_front(pointD2);
   waypoints_back.push_front(pointE);
+  waypoints_back.push_front(pointB2);
   waypoints_back.push_front(pointB);  // back
 
 
@@ -570,19 +606,20 @@ int main(int argc, char **argv)
       // TODO: process moving commands when in state 3,4, or 7
 
       // send commands:
-      std::cout << "Sending "
-                << " Forward: " << forward
-                << " Left: " << left
-                << " Up: " << up
-                << " RotateLeft: " << rotateLeft;
+      //std::cout << "Sending "
+        //        << " Forward: " << forward
+          //      << " Left: " << left
+          //      << " Up: " << up
+          //      << " RotateLeft: " << rotateLeft;
       //send the move command to drone
       bool success = autopilot.manualMove(forward,left,up,rotateLeft);
-
+      /*
       if (success) {
           std::cout << " [ OK ]" << std::endl;
       } else {
           std::cout << " [FAIL]" << std::endl;
       }
+      */
 
     }
 

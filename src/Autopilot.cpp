@@ -278,16 +278,18 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
     // TODO: setPoseReference() from current waypoint
     //B: Not sure if is a stack or a queue. If queue replace front() with back()
     Waypoint wp = waypoints_.front();
-    std::cout << "Waypoint coordinates :" << wp.x << " " << wp.y << " " << wp.z << " " << wp.yaw << std::endl;
+    //std::cout << "Waypoint coordinates :" << wp.x << " " << wp.y << " " << wp.z << " " << wp.yaw << std::endl;
     setPoseReference(wp.x, wp.y, wp.z, wp.yaw);
 
     getPoseReference(ref_pos[0], ref_pos[1], ref_pos[2], ref_pos_yaw);
 
     // TODO: remove the current waypoint, if the position error is below the tolerance.
     Eigen::Vector3d error = ref_pos - x.r_W;
+    //std::cout << "Error is " << error[0] << std::endl;
+
     //B: Do we need some kind of modulus here? as we have to be in a certain circular range
     // from the desired position
-    if(error[0] < wp.posTolerance && error[1] < wp.posTolerance && error[2] < wp.posTolerance){
+    if(error.norm() < wp.posTolerance){
       //maybe pop_back()
       waypoints_.pop_front();
     }
@@ -331,18 +333,20 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
 
   // TODO: only enable when in flight
   DroneStatus status = droneStatus();
-  if (status == DroneStatus::Flying) {
+  //std::cout << "Drone status is " << status << std::endl;
+  if (status == DroneStatus::Flying || status == DroneStatus::Hovering ||
+              status == DroneStatus::Flying2) {
     // TODO: get ros parameter
     double max_phi, max_theta, max_velocity, max_rotation;
 
     //std::cout << "Phi, Theta, velocity, Rotation:" << max_phi << max_theta << max_velocity << max_rotation << std::endl;
     // Bool to check if the parameters reading are ok
-    bool stop(false);
+    bool stop = false;
     if (! nh_->getParam("/ardrone_driver/euler_angle_max", max_phi)) { stop = true;}
     if (! nh_->getParam("/ardrone_driver/euler_angle_max", max_theta)) { stop = true;}
     if (! nh_->getParam("/ardrone_driver/control_vz_max", max_velocity)) { stop = true;}
     if (! nh_->getParam("/ardrone_driver/control_yaw", max_rotation)) { stop = true;}
-
+    //std::cout << "The boolean stop is " << stop;
     if (!stop)
     {
       // convert max velocity from mm/s to m/s
@@ -375,7 +379,8 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       output_Vspeed /= max_velocity;
       output_Yaw /= max_rotation;
 
-      //std::cout << "p, r, V, YAW:" << output_Pitch << output_Roll << output_Vspeed << output_Yaw << std::endl;
+      std::cout << "p, r, V, YAW:" << output_Pitch << " " << output_Roll <<
+        " " << output_Vspeed << " " << output_Yaw << " " << std::endl;
       // TODO: send to move
        move(output_Pitch, output_Roll, output_Vspeed, output_Yaw);
        // move(1.0, 1.0, 1.0, 1.0);
