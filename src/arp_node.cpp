@@ -268,63 +268,63 @@ int main(int argc, char **argv)
   pointA.y = 2.2;
   pointA.z = 1.2;
   pointA.yaw = 3.1;
-  pointA.posTolerance = 0.1;
+  pointA.posTolerance = 0.15;
   // Intermediate point 1
   arp::Autopilot::Waypoint pointA2;
   pointA2.x = 2.3;
   pointA2.y = 2.2;
   pointA2.z = 1.2;
   pointA2.yaw = 3.1;
-  pointA2.posTolerance = 0.1;
+  pointA2.posTolerance = 0.15;
   // Intermediate point 2
   arp::Autopilot::Waypoint pointC;
   pointC.x = 1.8;
   pointC.y = 2.2;
   pointC.z = 1.2;
   pointC.yaw = 3.1;
-  pointC.posTolerance = 0.1;
+  pointC.posTolerance = 0.15;
   // Intermediate point 2
   arp::Autopilot::Waypoint pointC2;
   pointC2.x = 1.8;
   pointC2.y = 3.2;
   pointC2.z = 1.2;
   pointC2.yaw = 3.1;
-  pointC2.posTolerance = 0.1;
+  pointC2.posTolerance = 0.15;
   // Intermediate point 2
   arp::Autopilot::Waypoint pointD;
   pointD.x = 1.8;
   pointD.y = 4.2;
   pointD.z = 1.2;
   pointD.yaw = 3.1;
-  pointD.posTolerance = 0.1;
+  pointD.posTolerance = 0.15;
   // Intermediate point 2
   arp::Autopilot::Waypoint pointD2;
   pointD2.x = 1.8;
   pointD2.y = 5.3;
   pointD2.z = 1.2;
   pointD2.yaw = 3.1;
-  pointD2.posTolerance = 0.1;
+  pointD2.posTolerance = 0.15;
   // Intermediate point 3
   arp::Autopilot::Waypoint pointE;
   pointE.x = 1.8;
   pointE.y = 6.5;
   pointE.z = 1.2;
   pointE.yaw = 3.1;
-  pointE.posTolerance = 0.1;
+  pointE.posTolerance = 0.15;
   // Intermediate point 4
   arp::Autopilot::Waypoint pointB2;
   pointB2.x = 2.3;
   pointB2.y = 6.5;
   pointB2.z = 1.2;
   pointB2.yaw = 3.1;
-  pointB2.posTolerance = 0.1;
+  pointB2.posTolerance = 0.15;
   // Delivery point
   arp::Autopilot::Waypoint pointB;
   pointB.x = 2.8;
   pointB.y = 6.5;
   pointB.z = 1.2;
   pointB.yaw = 3.1;
-  pointB.posTolerance = 0.1;
+  pointB.posTolerance = 0.15;
   // Add all the above points to the deque
   waypoints_forth.push_back(pointA);  // start
   waypoints_forth.push_back(pointA2);
@@ -393,11 +393,15 @@ int main(int argc, char **argv)
       autopilot.setManual();
       if (success) {
         std::cout << " Should be landing right now! " << std::endl;
-        if (autopilot.droneStatus() == arp::Autopilot::Landed && !wayback) {
+        sleep(3);
+        if (!wayback) {
+          std::cout << " Landed and should be taking off shortly! " << std::endl;
           autopilot.flyPath(waypoints_back);
           wayback = true;
           // Take off now
+          //bool success_t = false;
           bool success_t = autopilot.takeoff();
+          sleep(1);
           autopilot.setAutomatic();
           if (success_t) {
             std::cout << " Should be taking off right now! " << std::endl;

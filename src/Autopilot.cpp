@@ -8,6 +8,7 @@
 #include <arp/Autopilot.hpp>
 #include <arp/kinematics/operators.hpp>
 #include <cmath>
+#include <unistd.h>
 
 namespace arp {
 
@@ -379,8 +380,8 @@ void Autopilot::controllerCallback(uint64_t timeMicroseconds,
       output_Vspeed /= max_velocity;
       output_Yaw /= max_rotation;
 
-      std::cout << "p, r, V, YAW:" << output_Pitch << " " << output_Roll <<
-        " " << output_Vspeed << " " << output_Yaw << " " << std::endl;
+      // std::cout << "p, r, V, YAW:" << output_Pitch << " " << output_Roll <<
+      //   " " << output_Vspeed << " " << output_Yaw << " " << std::endl;
       // TODO: send to move
        move(output_Pitch, output_Roll, output_Vspeed, output_Yaw);
        // move(1.0, 1.0, 1.0, 1.0);
